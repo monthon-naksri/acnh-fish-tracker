@@ -680,7 +680,8 @@ SEA.forEach(s => { if (!SEA_UNCAUGHT.has(s.id)) DEFAULT_SEA_CAUGHT[s.id] = true;
 let state = {
   activeTab: 'fish',
   hemisphere: 'south',
-  quickFilter: 'uncaught',
+  caughtFilter: 'uncaught',
+  timeFilter: 'all',
   locationFilter: 'all',
   shadowFilter: 'all',
   monthFilter: 'auto',
@@ -830,13 +831,14 @@ function matchesLocationFilter(item) {
 function getFilteredData() {
   let list = [...getData()];
 
-  switch(state.quickFilter) {
-    case 'available': list = list.filter(f => isAvailableNow(f)); break;
-    case 'uncaught': list = list.filter(f => !isCaught(f)); break;
-    case 'caught': list = list.filter(f => isCaught(f)); break;
-    case 'leaving': list = list.filter(f => isLeavingSoon(f)); break;
-    case 'new': list = list.filter(f => isNewThisMonth(f)); break;
-  }
+  // Caught status filter
+  if (state.caughtFilter === 'uncaught') list = list.filter(f => !isCaught(f));
+  else if (state.caughtFilter === 'caught') list = list.filter(f => isCaught(f));
+
+  // Time filter (combines with caught filter)
+  if (state.timeFilter === 'available') list = list.filter(f => isAvailableNow(f));
+  else if (state.timeFilter === 'leaving') list = list.filter(f => isLeavingSoon(f));
+  else if (state.timeFilter === 'new') list = list.filter(f => isNewThisMonth(f));
 
   list = list.filter(f => matchesLocationFilter(f));
 
@@ -975,12 +977,29 @@ function setHemisphere(h) {
 }
 
 function setQuickFilter(f) {
-  state.quickFilter = f;
+  if (f === 'all') {
+    state.caughtFilter = 'all';
+    state.timeFilter = 'all';
+  } else if (f === 'uncaught' || f === 'caught') {
+    state.caughtFilter = state.caughtFilter === f ? 'all' : f;
+  } else {
+    state.timeFilter = state.timeFilter === f ? 'all' : f;
+  }
+  updateQuickFilterUI();
+  render();
+}
+
+function updateQuickFilterUI() {
+  const allActive = state.caughtFilter === 'all' && state.timeFilter === 'all';
   document.querySelectorAll('#quickFilters .filter-chip').forEach(b => {
-    b.classList.toggle('active', b.dataset.filter === f);
+    const f = b.dataset.filter;
+    let active = false;
+    if (f === 'all') active = allActive;
+    else if (f === 'uncaught' || f === 'caught') active = state.caughtFilter === f;
+    else active = state.timeFilter === f;
+    b.classList.toggle('active', active);
     b.classList.remove('highlight');
   });
-  render();
 }
 
 function setLocationFilter(loc) {
@@ -1059,7 +1078,7 @@ window.addEventListener('scroll', () => {
 
 // Auto-refresh every minute
 setInterval(() => {
-  if (state.quickFilter === 'available' || state.monthFilter === 'auto') render();
+  if (state.timeFilter === 'available' || state.monthFilter === 'auto') render();
 }, 60000);
 
 // Init
