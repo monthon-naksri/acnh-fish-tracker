@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#6ABF4B">
+<title>Critterpedia Fish Tracker</title>
+<link rel="manifest" href="manifest.json">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-main: #B8DFA4;
+  --bg-card: #FFFBF0;
+  --bg-card-caught: #F0EBD8;
+  --bg-header: #6ABF4B;
+  --bg-header-dark: #5AA83E;
+  --bg-filter: #E8F4E0;
+  --text-primary: #3C2A14;
+  --text-secondary: #7A6B5A;
+  --text-light: #A89880;
+  --accent-gold: #F5C518;
+  --accent-blue: #5BA3D9;
+  --accent-green: #4CAF50;
+  --accent-red: #E05555;
+  --badge-river: #5BA3D9;
+  --badge-pond: #68B89A;
+  --badge-sea: #3D7EC8;
+  --badge-pier: #9B7D5A;
+  --badge-clifftop: #8EBE4A;
+  --badge-mouth: #6A9BC3;
+  --shadow-soft: 0 2px 8px rgba(60, 42, 20, 0.08);
+  --shadow-card: 0 3px 12px rgba(60, 42, 20, 0.12);
+  --shadow-header: 0 4px 16px rgba(60, 42, 20, 0.15);
+  --radius-card: 16px;
+  --radius-btn: 12px;
+  --radius-badge: 8px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+body {
+  font-family: 'Nunito', -apple-system, sans-serif;
+  background: var(--bg-main);
+  color: var(--text-primary);
+  min-height: 100vh;
+  padding-bottom: 100px;
+  background-image: radial-gradient(circle at 20% 50%, rgba(255,255,255,0.15) 0%, transparent 50%),
+                    radial-gradient(circle at 80% 20%, rgba(255,255,255,0.1) 0%, transparent 40%);
+}
+
+/* ── Header ── */
+.header {
+  background: linear-gradient(135deg, var(--bg-header) 0%, var(--bg-header-dark) 100%);
+  padding: 20px 16px 16px;
+  box-shadow: var(--shadow-header);
+  position: sticky; top: 0; z-index: 100;
+}
+
+.header-top {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.logo {
+  display: flex; align-items: center; gap: 10px;
+}
+
+.logo-leaf {
+  width: 36px; height: 36px;
+  background: rgba(255,255,255,0.25);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+}
+
+.logo-text {
+  color: white; font-size: 18px; font-weight: 800;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.15);
+}
+
+.logo-sub {
+  color: rgba(255,255,255,0.8); font-size: 11px; font-weight: 600;
+}
+
+.hemisphere-toggle {
+  display: flex; background: rgba(255,255,255,0.2);
+  border-radius: 20px; overflow: hidden;
+}
+
+.hemisphere-btn {
+  padding: 6px 14px; font-size: 12px; font-weight: 700;
+  border: none; cursor: pointer; color: rgba(255,255,255,0.7);
+  background: transparent; font-family: inherit;
+  transition: all 0.2s;
+}
+
+.hemisphere-btn.active {
+  background: rgba(255,255,255,0.95); color: var(--bg-header);
+  border-radius: 20px;
+}
+
+/* Progress bar */
+.progress-section {
+  background: rgba(255,255,255,0.15); border-radius: 12px;
+  padding: 10px 14px;
+}
+
+.progress-info {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 6px;
+}
+
+.progress-label { color: rgba(255,255,255,0.9); font-size: 13px; font-weight: 600; }
+.progress-count { color: white; font-size: 14px; font-weight: 800; }
+
+.progress-bar {
+  height: 8px; background: rgba(0,0,0,0.15); border-radius: 4px; overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%; background: linear-gradient(90deg, var(--accent-gold) 0%, #FFE066 100%);
+  border-radius: 4px; transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
+}
+
+/* ── Filter Bar ── */
+.filter-section {
+  padding: 12px 16px 0;
+}
+
+.filter-row {
+  display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px;
+  scrollbar-width: none; -ms-overflow-style: none;
+}
+.filter-row::-webkit-scrollbar { display: none; }
+
+.filter-chip {
+  flex-shrink: 0; padding: 8px 16px; border-radius: 20px;
+  font-size: 13px; font-weight: 700; border: 2px solid transparent;
+  cursor: pointer; transition: all 0.2s; font-family: inherit;
+  background: var(--bg-card); color: var(--text-secondary);
+  box-shadow: var(--shadow-soft);
+}
+
+.filter-chip.active {
+  background: var(--bg-header); color: white;
+  border-color: var(--bg-header-dark);
+}
+
+.filter-chip.highlight {
+  background: var(--accent-gold); color: var(--text-primary);
+  border-color: #E0B000;
+}
+
+.filter-chip .chip-count {
+  display: inline-block; background: rgba(0,0,0,0.1);
+  border-radius: 10px; padding: 1px 7px; margin-left: 4px;
+  font-size: 11px;
+}
+
+.filter-chip.active .chip-count { background: rgba(255,255,255,0.25); }
+
+/* Search & controls */
+.controls-row {
+  display: flex; gap: 8px; padding: 0 16px 8px;
+}
+
+.search-box {
+  flex: 1; padding: 10px 14px 10px 36px;
+  border: 2px solid #E0D8C8; border-radius: var(--radius-btn);
+  font-size: 14px; font-family: inherit; font-weight: 600;
+  background: var(--bg-card); color: var(--text-primary);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%237A6B5A' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85zm-5.242.156a5 5 0 1 1 0-10 5 5 0 0 1 0 10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: 12px center;
+  transition: border-color 0.2s;
+}
+.search-box:focus { outline: none; border-color: var(--bg-header); }
+.search-box::placeholder { color: var(--text-light); }
+
+.rain-toggle {
+  display: flex; align-items: center; gap: 6px;
+  padding: 10px 14px; border-radius: var(--radius-btn);
+  background: var(--bg-card); border: 2px solid #E0D8C8;
+  cursor: pointer; font-size: 13px; font-weight: 700;
+  color: var(--text-secondary); transition: all 0.2s; font-family: inherit;
+}
+.rain-toggle.active { background: #D0E8F8; border-color: var(--accent-blue); color: var(--accent-blue); }
+
+/* Advanced filters */
+.advanced-filters {
+  padding: 0 16px 8px;
+  display: none;
+}
+.advanced-filters.show { display: block; }
+
+.filter-group {
+  margin-bottom: 8px;
+}
+.filter-group-label {
+  font-size: 11px; font-weight: 700; color: var(--text-secondary);
+  text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;
+}
+
+.filter-group .filter-row { padding-bottom: 6px; }
+
+.toggle-filters-btn {
+  display: block; width: 100%; padding: 8px;
+  background: transparent; border: none; cursor: pointer;
+  font-family: inherit; font-size: 12px; font-weight: 700;
+  color: var(--text-secondary); text-align: center;
+}
+
+/* ── Fish Grid ── */
+.fish-grid {
+  display: grid; grid-template-columns: 1fr;
+  gap: 10px; padding: 8px 16px;
+}
+
+@media (min-width: 480px) { .fish-grid { grid-template-columns: 1fr 1fr; } }
+@media (min-width: 768px) { .fish-grid { grid-template-columns: 1fr 1fr 1fr; } }
+@media (min-width: 1024px) { .fish-grid { grid-template-columns: 1fr 1fr 1fr 1fr; } }
+
+.fish-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-card);
+  padding: 14px;
+  box-shadow: var(--shadow-card);
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
+  position: relative;
+  border: 2px solid transparent;
+  user-select: none;
+}
+
+.fish-card:active { transform: scale(0.97); }
+.fish-card.caught { background: var(--bg-card-caught); border-color: #D8D0B8; }
+.fish-card.unavailable { opacity: 0.5; }
+
+.fish-card.leaving-soon::after {
+  content: 'LEAVING SOON';
+  position: absolute; top: 10px; right: 10px;
+  background: var(--accent-red); color: white;
+  padding: 2px 8px; border-radius: 6px;
+  font-size: 9px; font-weight: 800; letter-spacing: 0.3px;
+}
+
+.fish-card.new-this-month::before {
+  content: 'NEW!';
+  position: absolute; top: 10px; right: 10px;
+  background: var(--accent-green); color: white;
+  padding: 2px 8px; border-radius: 6px;
+  font-size: 9px; font-weight: 800;
+}
+
+.fish-card.leaving-soon.new-this-month::before { display: none; }
+
+.fish-name-row {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 8px;
+}
+
+.fish-icon { font-size: 24px; }
+
+.fish-name {
+  font-size: 15px; font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.fish-details {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  margin-bottom: 8px;
+}
+
+.fish-badge {
+  padding: 3px 10px; border-radius: var(--radius-badge);
+  font-size: 11px; font-weight: 700; color: white;
+}
+
+.badge-river { background: var(--badge-river); }
+.badge-pond { background: var(--badge-pond); }
+.badge-sea { background: var(--badge-sea); }
+.badge-pier { background: var(--badge-pier); }
+.badge-clifftop { background: var(--badge-clifftop); }
+.badge-mouth { background: var(--badge-mouth); }
+
+.fish-shadow-badge {
+  padding: 3px 10px; border-radius: var(--radius-badge);
+  font-size: 11px; font-weight: 700;
+  background: #E8E0D0; color: var(--text-secondary);
+}
+
+.fish-price {
+  display: flex; align-items: center; gap: 4px;
+  font-size: 14px; font-weight: 800;
+  color: #C4A000; margin-bottom: 6px;
+}
+
+.fish-price .bell-icon { font-size: 12px; }
+
+.fish-meta {
+  font-size: 11px; color: var(--text-secondary);
+  font-weight: 600; line-height: 1.4;
+}
+
+.fish-months {
+  font-size: 11px; color: var(--text-light);
+  font-weight: 600; margin-top: 4px;
+}
+
+.caught-indicator {
+  position: absolute; bottom: 12px; right: 12px;
+  width: 28px; height: 28px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: #E8E0D0; transition: all 0.3s;
+  font-size: 14px;
+}
+
+.fish-card.caught .caught-indicator {
+  background: var(--accent-green); color: white;
+  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.4);
+}
+
+/* ── Results Info ── */
+.results-info {
+  padding: 4px 16px 8px;
+  font-size: 12px; font-weight: 700;
+  color: var(--text-secondary);
+  display: flex; justify-content: space-between; align-items: center;
+}
+
+.sort-select {
+  padding: 4px 8px; border: 1px solid #D8D0C0;
+  border-radius: 8px; font-size: 12px; font-weight: 600;
+  font-family: inherit; background: var(--bg-card);
+  color: var(--text-secondary); cursor: pointer;
+}
+
+/* ── Empty State ── */
+.empty-state {
+  text-align: center; padding: 60px 20px;
+  color: var(--text-light);
+}
+.empty-state .empty-icon { font-size: 48px; margin-bottom: 12px; }
+.empty-state .empty-text { font-size: 15px; font-weight: 700; }
+
+/* ── Expanded Card / Tip ── */
+.fish-tip {
+  display: none; margin-top: 8px; padding-top: 8px;
+  border-top: 1px dashed #E0D8C8;
+  font-size: 12px; color: var(--text-secondary);
+  font-weight: 600; line-height: 1.5;
+}
+.fish-card.expanded .fish-tip { display: block; }
+
+/* ── Scroll to top button ── */
+.scroll-top {
+  position: fixed; bottom: 24px; right: 24px;
+  width: 48px; height: 48px; border-radius: 50%;
+  background: var(--bg-header); color: white;
+  border: none; font-size: 20px; cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  display: none; align-items: center; justify-content: center;
+  z-index: 99; transition: transform 0.2s;
+}
+.scroll-top:active { transform: scale(0.9); }
+.scroll-top.show { display: flex; }
+
+/* ── Animations ── */
+@keyframes pop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+.pop { animation: pop 0.3s ease; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+  <div class="header-top">
+    <div class="logo">
+      <div class="logo-leaf">🍃</div>
+      <div>
+        <div class="logo-text">Critterpedia</div>
+        <div class="logo-sub">Fish Tracker</div>
+      </div>
+    </div>
+    <div class="hemisphere-toggle">
+      <button class="hemisphere-btn" data-hemi="north" onclick="setHemisphere('north')">🌎 North</button>
+      <button class="hemisphere-btn active" data-hemi="south" onclick="setHemisphere('south')">🌏 South</button>
+    </div>
+  </div>
+  <div class="progress-section">
+    <div class="progress-info">
+      <span class="progress-label">🏛️ Museum Collection</span>
+      <span class="progress-count" id="progressCount">0 / 80</span>
+    </div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+    </div>
+  </div>
+</header>
+
+<!-- Quick Filters -->
+<div class="filter-section">
+  <div class="filter-row" id="quickFilters">
+    <button class="filter-chip" data-filter="all" onclick="setQuickFilter('all')">All Fish</button>
+    <button class="filter-chip highlight" data-filter="available" onclick="setQuickFilter('available')">🎣 Available Now <span class="chip-count" id="availableCount">0</span></button>
+    <button class="filter-chip active" data-filter="uncaught" onclick="setQuickFilter('uncaught')">❌ Uncaught <span class="chip-count" id="uncaughtCount">0</span></button>
+    <button class="filter-chip" data-filter="leaving" onclick="setQuickFilter('leaving')">⚠️ Leaving Soon <span class="chip-count" id="leavingCount">0</span></button>
+    <button class="filter-chip" data-filter="new" onclick="setQuickFilter('new')">✨ New This Month <span class="chip-count" id="newCount">0</span></button>
+    <button class="filter-chip" data-filter="caught" onclick="setQuickFilter('caught')">✅ Caught <span class="chip-count" id="caughtCount">0</span></button>
+  </div>
+</div>
+
+<!-- Search & Rain -->
+<div class="controls-row">
+  <input class="search-box" type="text" placeholder="Search fish..." id="searchBox" oninput="render()">
+  <button class="rain-toggle" id="rainToggle" onclick="toggleRain()">🌧️ Rain</button>
+</div>
+
+<!-- Advanced Filters Toggle -->
+<div style="display:flex;justify-content:center;gap:8px">
+  <button class="toggle-filters-btn" onclick="toggleAdvancedFilters()">
+    <span id="filterToggleText">▼ More Filters</span>
+  </button>
+  <button class="toggle-filters-btn" onclick="if(confirm('Reset all caught/uncaught back to Jess\'s original list?')){state.caught={...DEFAULT_CAUGHT};localStorage.setItem('acnh-fish-caught',JSON.stringify(state.caught));render();}">
+    🔄 Reset List
+  </button>
+</div>
+
+<div class="advanced-filters" id="advancedFilters">
+  <div class="filter-group">
+    <div class="filter-group-label">Location</div>
+    <div class="filter-row">
+      <button class="filter-chip active" data-loc="all" onclick="setLocationFilter('all')">All</button>
+      <button class="filter-chip" data-loc="River" onclick="setLocationFilter('River')">🏞️ River</button>
+      <button class="filter-chip" data-loc="Pond" onclick="setLocationFilter('Pond')">🌿 Pond</button>
+      <button class="filter-chip" data-loc="Sea" onclick="setLocationFilter('Sea')">🌊 Sea</button>
+      <button class="filter-chip" data-loc="Pier" onclick="setLocationFilter('Pier')">🪵 Pier</button>
+      <button class="filter-chip" data-loc="River (Clifftop)" onclick="setLocationFilter('River (Clifftop)')">⛰️ Clifftop</button>
+      <button class="filter-chip" data-loc="River (Mouth)" onclick="setLocationFilter('River (Mouth)')">🏖️ Mouth</button>
+    </div>
+  </div>
+  <div class="filter-group">
+    <div class="filter-group-label">Shadow Size</div>
+    <div class="filter-row">
+      <button class="filter-chip active" data-shadow="all" onclick="setShadowFilter('all')">All</button>
+      <button class="filter-chip" data-shadow="Tiny" onclick="setShadowFilter('Tiny')">Tiny</button>
+      <button class="filter-chip" data-shadow="Small" onclick="setShadowFilter('Small')">Small</button>
+      <button class="filter-chip" data-shadow="Medium" onclick="setShadowFilter('Medium')">Medium</button>
+      <button class="filter-chip" data-shadow="Large" onclick="setShadowFilter('Large')">Large</button>
+      <button class="filter-chip" data-shadow="Very Large" onclick="setShadowFilter('Very Large')">Very Large</button>
+      <button class="filter-chip" data-shadow="Huge" onclick="setShadowFilter('Huge')">Huge</button>
+      <button class="filter-chip" data-shadow="Narrow" onclick="setShadowFilter('Narrow')">Narrow</button>
+    </div>
+  </div>
+  <div class="filter-group">
+    <div class="filter-group-label">Month (override auto-detect)</div>
+    <div class="filter-row">
+      <button class="filter-chip active" data-month="auto" onclick="setMonthFilter('auto')">Auto</button>
+      <button class="filter-chip" data-month="1" onclick="setMonthFilter(1)">Jan</button>
+      <button class="filter-chip" data-month="2" onclick="setMonthFilter(2)">Feb</button>
+      <button class="filter-chip" data-month="3" onclick="setMonthFilter(3)">Mar</button>
+      <button class="filter-chip" data-month="4" onclick="setMonthFilter(4)">Apr</button>
+      <button class="filter-chip" data-month="5" onclick="setMonthFilter(5)">May</button>
+      <button class="filter-chip" data-month="6" onclick="setMonthFilter(6)">Jun</button>
+      <button class="filter-chip" data-month="7" onclick="setMonthFilter(7)">Jul</button>
+      <button class="filter-chip" data-month="8" onclick="setMonthFilter(8)">Aug</button>
+      <button class="filter-chip" data-month="9" onclick="setMonthFilter(9)">Sep</button>
+      <button class="filter-chip" data-month="10" onclick="setMonthFilter(10)">Oct</button>
+      <button class="filter-chip" data-month="11" onclick="setMonthFilter(11)">Nov</button>
+      <button class="filter-chip" data-month="12" onclick="setMonthFilter(12)">Dec</button>
+    </div>
+  </div>
+</div>
+
+<!-- Results info -->
+<div class="results-info">
+  <span id="resultsText">Showing 80 fish</span>
+  <select class="sort-select" id="sortSelect" onchange="render()">
+    <option value="name">Sort: Name</option>
+    <option value="price-desc">Sort: Price ↓</option>
+    <option value="price-asc">Sort: Price ↑</option>
+    <option value="location">Sort: Location</option>
+    <option value="shadow">Sort: Shadow Size</option>
+  </select>
+</div>
+
+<!-- Fish Grid -->
+<div class="fish-grid" id="fishGrid"></div>
+
+<!-- Empty State -->
+<div class="empty-state" id="emptyState" style="display:none">
+  <div class="empty-icon">🐟</div>
+  <div class="empty-text">No fish match your filters</div>
+</div>
+
+<!-- Scroll to top -->
+<button class="scroll-top" id="scrollTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<script>
+// ══════════════════════════════════════════════════════════
+//  ACNH Fish Data — All 80 Fish
+// ══════════════════════════════════════════════════════════
+const FISH = [
+  // RIVER (22)
+  {id:1,name:"Bitterling",price:900,shadow:"Tiny",location:"River",hours:[[0,24]],monthsN:[11,12,1,2,3],monthsS:[5,6,7,8,9],conditions:"",tips:"Common tiny river shadow. Winter only (NH)."},
+  {id:2,name:"Pale Chub",price:200,shadow:"Tiny",location:"River",hours:[[9,16]],monthsN:[1,2,3,4,5,6,7,8,9,10,11,12],monthsS:[1,2,3,4,5,6,7,8,9,10,11,12],conditions:"",tips:"Most common tiny river fish. Daytime only."},
+  {id:3,name:"Crucian Carp",price:160,shadow:"Small",location:"River",hours:[[0,24]],monthsN:[1,2,3,4,5,6,7,8,9,10,11,12],monthsS:[1,2,3,4,5,6,7,8,9,10,11,12],conditions:"",tips:"Cheapest common river fish. Always available."},
+  {id:4,name:"Dace",price:240,shadow:"Medium",location:"River",hours:[[16,9]],monthsN:[1,2,3,4,5,6,7,8,9,10,11,12],monthsS:[1,2,3,4,5,6,7,8,9,10,11,12],conditions:"",tips:"Nocturnal year-round. Medium shadow at night."},
+  {id:16,name:"Freshwater Goby",price:400,shadow:"Small",location:"River",hours:[[16,9]],monthsN:[1,2,3,4,5,6,7,8,9,10,11,12],monthsS:[1,2,3,4,5,6,7,8,9,10,11,12],conditions:"",tips:"Nocturnal year-round. Small shadow."},
+  {id:17,name:"Loach",price:400,shadow:"Small",location:"River",hours:[[0,24]],monthsN:[3,4,5],monthsS:[9,10,11],conditions:"",tips:"Spring only (NH). Small shadow, all day."},
+  {id:20,name:"Bluegill",price:180,shadow:"Small",location:"River",hours:[[9,16]],monthsN:[1,2,3,4,5,6,7,8,9,10,11,12],monthsS:[1,2,3,4,5,6,7,8,9,10,11,12],conditions:"",tips:"Common filler. Daytime only."},
+  {id:21,name:"Yellow Perch",price:300,shadow:"Medium",location:"River",hours:[[0,24]],monthsN:[10,11,12,1,2,3],monthsS:[4,5,6,7,8,9],conditions:"",tips:"Winter fish (NH). All-day medium shadow."},
+  {id:22,name:"Black Bass",price:400,shadow:"Large",location:"River",hours:[[0,24]],monthsN:[1,2,3,4,5,6,7,8,9,10,11,12],monthsS:[1,2,3,4,5,6,7,8,9,10,11,12],conditions:"",tips:"Always available. Large shadow filler."},
+  {id:23,name:"Tilapia",price:800,shadow:"Medium",location:"River",hours:[[0,24]],monthsN:[6,7,8,9,10],monthsS:[12,1,2,3,4],conditions:"",tips:"Warm months. Medium shadow."},
+  {id:24,name:"Pike",price:1800,shadow:"Very Large",location:"River",hours:[[0,24]],monthsN:[9,10,11,12],monthsS:[3,4,5,6],conditions:"",tips:"Autumn (NH). Large shadow, decent price."},
+  {id:25,name:"Pond Smelt",price:400,shadow:"Small",location:"River",hours:[[0,24]],monthsN:[12,1,2],monthsS:[6,7,8],conditions:"",tips:"Winter only (NH). Easy to miss — only 3 months."},
+  {id:26,name:"Sweetfish",price:900,shadow:"Medium",location:"River",hours:[[0,24]],monthsN:[7,8,9],monthsS:[1,2,3],conditions:"",tips:"Summer only (NH)."},
+  {id:33,name:"Mitten Crab",price:2000,shadow:"Small",location:"River",hours:[[16,9]],monthsN:[9,10,11],monthsS:[3,4,5],conditions:"",tips:"Autumn (NH), nocturnal. Small shadow but 2,000 bells!"},
+  {id:34,name:"Guppy",price:1300,shadow:"Tiny",location:"River",hours:[[9,16]],monthsN:[4,5,6,7,8,9,10,11],monthsS:[10,11,12,1,2,3,4,5],conditions:"",tips:"Tropical daytime tiny shadow."},
+  {id:35,name:"Nibble Fish",price:1500,shadow:"Tiny",location:"River",hours:[[9,16]],monthsN:[5,6,7,8,9],monthsS:[11,12,1,2,3],conditions:"",tips:"Smallest shadow in game. Daytime. Summer (NH)."},
+  {id:36,name:"Angelfish",price:3000,shadow:"Small",location:"River",hours:[[16,9]],monthsN:[5,6,7,8,9,10],monthsS:[11,12,1,2,3,4],conditions:"",tips:"Tropical nocturnal. Small shadow worth 3K."},
+  {id:37,name:"Betta",price:2500,shadow:"Small",location:"River",hours:[[9,16]],monthsN:[5,6,7,8,9,10],monthsS:[11,12,1,2,3,4],conditions:"",tips:"Tropical daytime. Small shadow."},
+  {id:38,name:"Neon Tetra",price:500,shadow:"Tiny",location:"River",hours:[[9,16]],monthsN:[4,5,6,7,8,9,10,11],monthsS:[10,11,12,1,2,3,4,5],conditions:"",tips:"Tropical daytime tiny."},
+  {id:39,name:"Rainbowfish",price:800,shadow:"Tiny",location:"River",hours:[[9,16]],monthsN:[5,6,7,8,9,10],monthsS:[11,12,1,2,3,4],conditions:"",tips:"Tropical warm months. Tiny daytime."},
+  {id:40,name:"Piranha",price:2500,shadow:"Small",location:"River",hours:[[9,16],[21,4]],monthsN:[6,7,8,9],monthsS:[12,1,2,3],conditions:"",tips:"Two catch windows: 9AM–4PM AND 9PM–4AM. Summer (NH)."},
+  {id:41,name:"Arowana",price:10000,shadow:"Large",location:"River",hours:[[16,9]],monthsN:[6,7,8,9],monthsS:[12,1,2,3],conditions:"",tips:"Nocturnal tropical. 10,000 bells!"},
+  // RIVER — Turtles (counted under river)
+  {id:12,name:"Soft-shelled Turtle",price:3750,shadow:"Large",location:"River",hours:[[16,9]],monthsN:[8,9],monthsS:[2,3],conditions:"",tips:"Only 2 months (NH)! Nocturnal. Easy to miss."},
+  {id:13,name:"Snapping Turtle",price:5000,shadow:"Large",location:"River",hours:[[21,4]],monthsN:[4,5,6,7,8,9,10],monthsS:[10,11,12,1,2,3,4],conditions:"",tips:"Very narrow window: 9PM–4AM only. Long season but hard to catch."},
+  // RIVER — Rare tropical
+  {id:42,name:"Dorado",price:15000,shadow:"Very Large",location:"River",hours:[[4,21]],monthsN:[6,7,8,9],monthsS:[12,1,2,3],conditions:"",tips:"Daytime (4AM–9PM), unlike most rare river fish. 15,000 bells!"},
+  {id:44,name:"Arapaima",price:10000,shadow:"Huge",location:"River",hours:[[16,9]],monthsN:[6,7,8,9],monthsS:[12,1,2,3],conditions:"",tips:"Huge river shadow. Nocturnal. Summer (NH). 10K bells."},
+  {id:45,name:"Saddled Bichir",price:4000,shadow:"Large",location:"River",hours:[[21,4]],monthsN:[6,7,8,9],monthsS:[12,1,2,3],conditions:"",tips:"Very narrow window: 9PM–4AM only. Easy to miss."},
+
+  // CLIFFTOP (4)
+  {id:27,name:"Cherry Salmon",price:1000,shadow:"Medium",location:"River (Clifftop)",hours:[[16,9]],monthsN:[3,4,5,6,9,10,11],monthsS:[3,4,5,9,10,11,12],conditions:"",tips:"Clifftop only. Nocturnal Mar–Jun (NH); ALL DAY Sep–Nov (NH)."},
+  {id:28,name:"Char",price:3800,shadow:"Medium",location:"River (Clifftop)",hours:[[16,9]],monthsN:[3,4,5,6,9,10,11],monthsS:[3,4,5,9,10,11,12],conditions:"",tips:"Clifftop only. Same windows as Cherry Salmon. Much more valuable."},
+  {id:29,name:"Golden Trout",price:15000,shadow:"Medium",location:"River (Clifftop)",hours:[[16,9]],monthsN:[3,4,5,9,10,11],monthsS:[3,4,5,9,10,11],conditions:"",tips:"Same months BOTH hemispheres! Clifftop + nocturnal. 15K bells."},
+  {id:30,name:"Stringfish",price:15000,shadow:"Very Large",location:"River (Clifftop)",hours:[[16,9]],monthsN:[12,1,2,3],monthsS:[6,7,8,9],conditions:"",tips:"Winter (NH) clifftop. Very Large shadow — distinguishable from Char (Medium)."},
+
+  // RIVER MOUTH (3)
+  {id:31,name:"Salmon",price:700,shadow:"Large",location:"River (Mouth)",hours:[[0,24]],monthsN:[9],monthsS:[3],conditions:"",tips:"ONE MONTH ONLY! September (NH). Don't miss it!"},
+  {id:32,name:"King Salmon",price:1800,shadow:"Very Large",location:"River (Mouth)",hours:[[0,24]],monthsN:[9],monthsS:[3],conditions:"",tips:"ONE MONTH ONLY! September (NH). Very Large shadow in river mouth."},
+  {id:46,name:"Sturgeon",price:10000,shadow:"Huge",location:"River (Mouth)",hours:[[0,24]],monthsN:[9,10,11,12,1,2,3],monthsS:[3,4,5,6,7,8,9],conditions:"",tips:"Huge shadow in river mouth — unmistakeable. 7 months (NH). 10K bells."},
+
+  // POND (10 + Gar)
+  {id:5,name:"Carp",price:300,shadow:"Large",location:"Pond",hours:[[0,24]],monthsN:[1,2,3,4,5,6,7,8,9,10,11,12],monthsS:[1,2,3,4,5,6,7,8,9,10,11,12],conditions:"",tips:"Always available. Large pond shadow."},
+  {id:6,name:"Koi",price:4000,shadow:"Large",location:"Pond",hours:[[16,9]],monthsN:[1,2,3,4,5,6,7,8,9,10,11,12],monthsS:[1,2,3,4,5,6,7,8,9,10,11,12],conditions:"",tips:"Year-round but nocturnal only. Same shadow as Carp — night = Koi chance!"},
+  {id:7,name:"Goldfish",price:1300,shadow:"Tiny",location:"Pond",hours:[[0,24]],monthsN:[1,2,3,4,5,6,7,8,9,10,11,12],monthsS:[1,2,3,4,5,6,7,8,9,10,11,12],conditions:"",tips:"Always available tiny pond shadow."},
+  {id:8,name:"Pop-eyed Goldfish",price:1300,shadow:"Tiny",location:"Pond",hours:[[9,16]],monthsN:[1,2,3,4,5,6,7,8,9,10,11,12],monthsS:[1,2,3,4,5,6,7,8,9,10,11,12],conditions:"",tips:"Daytime variant. Same shadow as regular Goldfish."},
+  {id:9,name:"Ranchu Goldfish",price:4500,shadow:"Small",location:"Pond",hours:[[9,16]],monthsN:[1,2,3,4,5,6,7,8,9,10,11,12],monthsS:[1,2,3,4,5,6,7,8,9,10,11,12],conditions:"",tips:"Year-round daytime. Surprisingly valuable at 4,500 bells!"},
+  {id:10,name:"Killifish",price:300,shadow:"Tiny",location:"Pond",hours:[[0,24]],monthsN:[4,5,6,7,8],monthsS:[10,11,12,1,2],conditions:"",tips:"Spring–Summer (NH). Tiny pond shadow."},
+  {id:11,name:"Crawfish",price:200,shadow:"Small",location:"Pond",hours:[[0,24]],monthsN:[4,5,6,7,8,9],monthsS:[10,11,12,1,2,3],conditions:"",tips:"Warm months (NH). Common small shadow."},
+  {id:14,name:"Tadpole",price:100,shadow:"Tiny",location:"Pond",hours:[[0,24]],monthsN:[3,4,5,6,7],monthsS:[9,10,11,12,1],conditions:"",tips:"Cheapest fish in the game (100 bells). Spring (NH)."},
+  {id:15,name:"Frog",price:120,shadow:"Small",location:"Pond",hours:[[0,24]],monthsN:[5,6,7,8],monthsS:[11,12,1,2],conditions:"",tips:"Summer only (NH). 2nd cheapest fish."},
+  {id:18,name:"Catfish",price:800,shadow:"Large",location:"Pond",hours:[[16,9]],monthsN:[5,6,7,8,9,10],monthsS:[11,12,1,2,3,4],conditions:"",tips:"Warm months + nocturnal. Large pond shadow."},
+  {id:19,name:"Giant Snakehead",price:5500,shadow:"Large",location:"Pond",hours:[[9,16]],monthsN:[6,7,8],monthsS:[12,1,2],conditions:"",tips:"Only 3 months (NH)! Daytime. 2nd most expensive pond fish."},
+  {id:43,name:"Gar",price:6000,shadow:"Huge",location:"Pond",hours:[[16,9]],monthsN:[6,7,8,9],monthsS:[12,1,2,3],conditions:"",tips:"Huge shadow in pond. Nocturnal. Summer (NH). 6K bells."},
+
+  // SEA — Regular (20)
+  {id:47,name:"Sea Butterfly",price:1000,shadow:"Tiny",location:"Sea",hours:[[0,24]],monthsN:[12,1,2,3],monthsS:[6,7,8,9],conditions:"",tips:"Winter (NH). Tiny sea shadow — use fish bait to target."},
+  {id:48,name:"Sea Horse",price:1100,shadow:"Tiny",location:"Sea",hours:[[0,24]],monthsN:[4,5,6,7,8,9,10,11],monthsS:[10,11,12,1,2,3,4,5],conditions:"",tips:"Warm months. Tiny sea shadow."},
+  {id:49,name:"Clown Fish",price:650,shadow:"Tiny",location:"Sea",hours:[[0,24]],monthsN:[4,5,6,7,8,9],monthsS:[10,11,12,1,2,3],conditions:"",tips:"Summer (NH). Tiny sea shadow. Nemo!"},
+  {id:50,name:"Surgeonfish",price:1000,shadow:"Small",location:"Sea",hours:[[0,24]],monthsN:[4,5,6,7,8,9],monthsS:[10,11,12,1,2,3],conditions:"",tips:"Summer (NH). Dory! All day."},
+  {id:51,name:"Butterfly Fish",price:1000,shadow:"Small",location:"Sea",hours:[[0,24]],monthsN:[4,5,6,7,8,9],monthsS:[10,11,12,1,2,3],conditions:"",tips:"Summer (NH). Same window as Surgeonfish."},
+  {id:52,name:"Napoleonfish",price:10000,shadow:"Huge",location:"Sea",hours:[[4,21]],monthsN:[7,8],monthsS:[1,2],conditions:"",tips:"Only 2 months (NH)! Daytime. Very rare. 10K bells."},
+  {id:53,name:"Zebra Turkeyfish",price:500,shadow:"Medium",location:"Sea",hours:[[0,24]],monthsN:[4,5,6,7,8,9,10,11],monthsS:[10,11,12,1,2,3,4,5],conditions:"",tips:"Warm months. Medium sea shadow."},
+  {id:54,name:"Blowfish",price:5000,shadow:"Medium",location:"Sea",hours:[[21,4]],monthsN:[11,12,1,2],monthsS:[5,6,7,8],conditions:"",tips:"Night only (9PM–4AM) + winter (NH). Hard to find but worth 5K!"},
+  {id:55,name:"Puffer Fish",price:250,shadow:"Medium",location:"Sea",hours:[[0,24]],monthsN:[7,8,9],monthsS:[1,2,3],conditions:"",tips:"Summer only (NH). Medium shadow, low value."},
+  {id:56,name:"Anchovy",price:200,shadow:"Small",location:"Sea",hours:[[4,21]],monthsN:[1,2,3,4,5,6,7,8,9,10,11,12],monthsS:[1,2,3,4,5,6,7,8,9,10,11,12],conditions:"",tips:"Year-round but NOT available 9PM–4AM."},
+  {id:57,name:"Horse Mackerel",price:150,shadow:"Small",location:"Sea",hours:[[0,24]],monthsN:[1,2,3,4,5,6,7,8,9,10,11,12],monthsS:[1,2,3,4,5,6,7,8,9,10,11,12],conditions:"",tips:"Cheapest sea fish. Always available. The ultimate filler."},
+  {id:58,name:"Barred Knifejaw",price:5000,shadow:"Medium",location:"Sea",hours:[[0,24]],monthsN:[3,4,5,6,7,8,9,10,11],monthsS:[9,10,11,12,1,2,3,4,5],conditions:"",tips:"Long season. All day. Worth 5K bells."},
+  {id:59,name:"Sea Bass",price:400,shadow:"Very Large",location:"Sea",hours:[[0,24]],monthsN:[1,2,3,4,5,6,7,8,9,10,11,12],monthsS:[1,2,3,4,5,6,7,8,9,10,11,12],conditions:"",tips:"\"It's at least a C+!\" The meme fish. Always available."},
+  {id:60,name:"Red Snapper",price:3000,shadow:"Large",location:"Sea",hours:[[0,24]],monthsN:[1,2,3,4,5,6,7,8,9,10,11,12],monthsS:[1,2,3,4,5,6,7,8,9,10,11,12],conditions:"",tips:"Year-round. Good value common sea fish (3K bells)."},
+  {id:61,name:"Dab",price:300,shadow:"Medium",location:"Sea",hours:[[0,24]],monthsN:[10,11,12,1,2,3,4],monthsS:[4,5,6,7,8,9,10],conditions:"",tips:"Autumn–Spring (NH). Medium shadow."},
+  {id:62,name:"Olive Flounder",price:800,shadow:"Very Large",location:"Sea",hours:[[0,24]],monthsN:[1,2,3,4,5,6,7,8,9,10,11,12],monthsS:[1,2,3,4,5,6,7,8,9,10,11,12],conditions:"",tips:"Year-round. Decent value large shadow."},
+  {id:63,name:"Squid",price:500,shadow:"Medium",location:"Sea",hours:[[0,24]],monthsN:[12,1,2,3,4,5,6,7,8],monthsS:[6,7,8,9,10,11,12,1,2],conditions:"",tips:"Available most of year. NOT Sep–Nov (NH)."},
+  {id:64,name:"Moray Eel",price:2000,shadow:"Narrow",location:"Sea",hours:[[0,24]],monthsN:[8,9,10],monthsS:[2,3,4],conditions:"",tips:"Distinctive long thin eel shadow. 3 months (NH)."},
+  {id:65,name:"Ribbon Eel",price:600,shadow:"Narrow",location:"Sea",hours:[[0,24]],monthsN:[6,7,8,9,10],monthsS:[12,1,2,3,4],conditions:"",tips:"Thin eel shadow. Longer season than Moray."},
+  {id:71,name:"Ray",price:3000,shadow:"Very Large",location:"Sea",hours:[[4,21]],monthsN:[8,9,10,11],monthsS:[2,3,4,5],conditions:"",tips:"Daytime (4AM–9PM). Autumn (NH). 3K bells."},
+
+  // SEA — Finned (6)
+  {id:70,name:"Ocean Sunfish",price:4000,shadow:"Huge",location:"Sea",hours:[[4,21]],monthsN:[7,8,9],monthsS:[1,2,3],conditions:"Fin",tips:"Daytime. Summer (NH). Huge fin shadow — often mistaken for shark!"},
+  {id:72,name:"Saw Shark",price:12000,shadow:"Very Large",location:"Sea",hours:[[16,9]],monthsN:[6,7,8,9],monthsS:[12,1,2,3],conditions:"Fin",tips:"Nocturnal. Summer (NH). Very Large fin shadow. 12K bells!"},
+  {id:73,name:"Hammerhead Shark",price:8000,shadow:"Very Large",location:"Sea",hours:[[16,9]],monthsN:[6,7,8,9],monthsS:[12,1,2,3],conditions:"Fin",tips:"Nocturnal. Same window as Saw Shark. 8K bells."},
+  {id:74,name:"Great White Shark",price:15000,shadow:"Very Large",location:"Sea",hours:[[16,9]],monthsN:[6,7,8,9],monthsS:[12,1,2,3],conditions:"Fin",tips:"The holy grail! Nocturnal. Summer (NH). 15K bells!"},
+  {id:75,name:"Whale Shark",price:13000,shadow:"Very Large",location:"Sea",hours:[[0,24]],monthsN:[6,7,8,9],monthsS:[12,1,2,3],conditions:"Fin",tips:"All day — easiest shark to find. No time restriction. 13K bells."},
+  {id:76,name:"Suckerfish",price:1500,shadow:"Very Large",location:"Sea",hours:[[0,24]],monthsN:[6,7,8,9],monthsS:[12,1,2,3],conditions:"Fin",tips:"All day. Low-value fin shadow. Same season as sharks."},
+
+  // SEA — Night/Rare (3)
+  {id:77,name:"Football Fish",price:2500,shadow:"Large",location:"Sea",hours:[[16,9]],monthsN:[11,12,1,2,3],monthsS:[5,6,7,8,9],conditions:"",tips:"Nocturnal. Winter (NH). Look for large shadows at night near the shore."},
+  {id:78,name:"Oarfish",price:9000,shadow:"Huge",location:"Sea",hours:[[0,24]],monthsN:[12,1,2,3,4,5],monthsS:[6,7,8,9,10,11],conditions:"",tips:"Winter–Spring (NH). Huge shadow. 9K bells!"},
+  {id:79,name:"Barreleye",price:15000,shadow:"Small",location:"Sea",hours:[[21,4]],monthsN:[1,2,3,4,5,6,7,8,9,10,11,12],monthsS:[1,2,3,4,5,6,7,8,9,10,11,12],conditions:"",tips:"Year-round but 9PM–4AM only. Small shadow worth 15K! Highest-value small fish."},
+  {id:80,name:"Coelacanth",price:15000,shadow:"Huge",location:"Sea",hours:[[0,24]],monthsN:[1,2,3,4,5,6,7,8,9,10,11,12],monthsS:[1,2,3,4,5,6,7,8,9,10,11,12],conditions:"Rain",tips:"RAIN/SNOW ONLY. Year-round. Huge shadow. The legendary living fossil. 15K bells!"},
+
+  // PIER (4)
+  {id:66,name:"Tuna",price:7000,shadow:"Huge",location:"Pier",hours:[[0,24]],monthsN:[11,12,1,2,3,4],monthsS:[5,6,7,8,9,10],conditions:"",tips:"Winter (NH). Huge shadow. PIER ONLY — fish from the end of the pier!"},
+  {id:67,name:"Blue Marlin",price:10000,shadow:"Huge",location:"Pier",hours:[[0,24]],monthsN:[7,8,9,11,12,1,2,3,4],monthsS:[1,2,3,5,6,7,8,9,10],conditions:"",tips:"Two windows (NH): Jul–Sep AND Nov–Apr. Only absent in October! PIER ONLY."},
+  {id:68,name:"Giant Trevally",price:4500,shadow:"Very Large",location:"Pier",hours:[[0,24]],monthsN:[5,6,7,8,9,10],monthsS:[11,12,1,2,3,4],conditions:"",tips:"Summer (NH). All day. PIER ONLY. 4,500 bells."},
+  {id:69,name:"Mahi-mahi",price:6000,shadow:"Very Large",location:"Pier",hours:[[0,24]],monthsN:[5,6,7,8,9,10],monthsS:[11,12,1,2,3,4],conditions:"",tips:"Summer (NH). All day. PIER ONLY. Beautiful golden colour!"},
+];
+
+// ══════════════════════════════════════════════════════════
+//  App State
+// ══════════════════════════════════════════════════════════
+const MONTH_NAMES = ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const SHADOW_ORDER = {'Tiny':1,'Small':2,'Medium':3,'Large':4,'Narrow':4,'Very Large':5,'Huge':6};
+const LOCATION_COLORS = {
+  'River':'badge-river','Pond':'badge-pond','Sea':'badge-sea',
+  'Pier':'badge-pier','River (Clifftop)':'badge-clifftop','River (Mouth)':'badge-mouth'
+};
+const FISH_ICONS = {
+  'River':'🐟','Pond':'🐸','Sea':'🐠','Pier':'🎣',
+  'River (Clifftop)':'🏔️','River (Mouth)':'🌊'
+};
+
+let state = {
+  hemisphere: 'south',
+  quickFilter: 'uncaught',
+  locationFilter: 'all',
+  shadowFilter: 'all',
+  monthFilter: 'auto',
+  isRaining: false,
+  caught: {},
+  expanded: {}
+};
+
+// Jess's caught fish — all IDs NOT in her "still need" list
+const UNCAUGHT_IDS = new Set([9,10,14,15,17,19,29,30,36,37,39,40,46,47,52,54,63,66,67,68,69,73,75,78,79]);
+const DEFAULT_CAUGHT = {};
+FISH.forEach(f => { if (!UNCAUGHT_IDS.has(f.id)) DEFAULT_CAUGHT[f.id] = true; });
+
+// Load caught state from localStorage, or use Jess's defaults on first visit
+try {
+  const saved = localStorage.getItem('acnh-fish-caught');
+  if (saved) state.caught = JSON.parse(saved);
+  else { state.caught = DEFAULT_CAUGHT; localStorage.setItem('acnh-fish-caught', JSON.stringify(DEFAULT_CAUGHT)); }
+} catch(e) { state.caught = DEFAULT_CAUGHT; }
+
+// ══════════════════════════════════════════════════════════
+//  Helper Functions
+// ══════════════════════════════════════════════════════════
+function getCurrentMonth() {
+  return state.monthFilter === 'auto' ? new Date().getMonth() + 1 : state.monthFilter;
+}
+
+function getCurrentHour() {
+  return new Date().getHours();
+}
+
+function getNextMonth(m) { return m === 12 ? 1 : m + 1; }
+function getPrevMonth(m) { return m === 1 ? 12 : m - 1; }
+
+function getMonths(fish) {
+  return state.hemisphere === 'south' ? fish.monthsS : fish.monthsN;
+}
+
+function isInTimeWindow(hour, windows) {
+  return windows.some(([start, end]) => {
+    if (start === 0 && end === 24) return true;
+    if (start < end) return hour >= start && hour < end;
+    return hour >= start || hour < end;
+  });
+}
+
+function isAvailableAt(fish, month, hour, raining) {
+  const months = getMonths(fish);
+  if (!months.includes(month)) return false;
+  if (fish.conditions === 'Rain' && !raining) return false;
+  return isInTimeWindow(hour, fish.hours);
+}
+
+function isAvailableNow(fish) {
+  return isAvailableAt(fish, getCurrentMonth(), getCurrentHour(), state.isRaining);
+}
+
+function isLeavingSoon(fish) {
+  const months = getMonths(fish);
+  const cur = getCurrentMonth();
+  const next = getNextMonth(cur);
+  return months.includes(cur) && !months.includes(next);
+}
+
+function isNewThisMonth(fish) {
+  const months = getMonths(fish);
+  const cur = getCurrentMonth();
+  const prev = getPrevMonth(cur);
+  return months.includes(cur) && !months.includes(prev);
+}
+
+function isCaught(fish) {
+  return !!state.caught[fish.id];
+}
+
+function formatHours(hours) {
+  if (hours.length === 1 && hours[0][0] === 0 && hours[0][1] === 24) return 'All Day';
+  return hours.map(([s, e]) => {
+    const sf = s === 0 ? '12AM' : s < 12 ? s + 'AM' : s === 12 ? '12PM' : (s-12) + 'PM';
+    const ef = e === 0 ? '12AM' : e < 12 ? e + 'AM' : e === 12 ? '12PM' : (e-12) + 'PM';
+    return sf + '–' + ef;
+  }).join(' & ');
+}
+
+function formatMonths(fish) {
+  const months = getMonths(fish);
+  if (months.length === 12) return 'Year-round';
+  return months.map(m => MONTH_NAMES[m]).join(', ');
+}
+
+function formatPrice(p) {
+  return p.toLocaleString();
+}
+
+// ══════════════════════════════════════════════════════════
+//  Filter & Sort
+// ══════════════════════════════════════════════════════════
+function getFilteredFish() {
+  let list = FISH;
+
+  // Quick filter
+  switch(state.quickFilter) {
+    case 'available': list = list.filter(f => isAvailableNow(f)); break;
+    case 'uncaught': list = list.filter(f => !isCaught(f)); break;
+    case 'caught': list = list.filter(f => isCaught(f)); break;
+    case 'leaving': list = list.filter(f => isLeavingSoon(f)); break;
+    case 'new': list = list.filter(f => isNewThisMonth(f)); break;
+  }
+
+  // Location filter
+  if (state.locationFilter !== 'all') {
+    list = list.filter(f => f.location === state.locationFilter);
+  }
+
+  // Shadow filter
+  if (state.shadowFilter !== 'all') {
+    list = list.filter(f => f.shadow === state.shadowFilter);
+  }
+
+  // Search
+  const search = document.getElementById('searchBox').value.toLowerCase().trim();
+  if (search) {
+    list = list.filter(f => f.name.toLowerCase().includes(search));
+  }
+
+  // Sort
+  const sort = document.getElementById('sortSelect').value;
+  switch(sort) {
+    case 'name': list.sort((a,b) => a.name.localeCompare(b.name)); break;
+    case 'price-desc': list.sort((a,b) => b.price - a.price); break;
+    case 'price-asc': list.sort((a,b) => a.price - b.price); break;
+    case 'location': list.sort((a,b) => a.location.localeCompare(b.location) || a.name.localeCompare(b.name)); break;
+    case 'shadow': list.sort((a,b) => (SHADOW_ORDER[a.shadow]||0) - (SHADOW_ORDER[b.shadow]||0) || a.name.localeCompare(b.name)); break;
+  }
+
+  return list;
+}
+
+// ══════════════════════════════════════════════════════════
+//  Render
+// ══════════════════════════════════════════════════════════
+function render() {
+  const filtered = getFilteredFish();
+  const grid = document.getElementById('fishGrid');
+  const empty = document.getElementById('emptyState');
+
+  // Update counts
+  const caughtTotal = FISH.filter(f => isCaught(f)).length;
+  document.getElementById('progressCount').textContent = caughtTotal + ' / 80';
+  document.getElementById('progressFill').style.width = (caughtTotal / 80 * 100) + '%';
+  document.getElementById('availableCount').textContent = FISH.filter(f => isAvailableNow(f)).length;
+  document.getElementById('uncaughtCount').textContent = FISH.filter(f => !isCaught(f)).length;
+  document.getElementById('leavingCount').textContent = FISH.filter(f => isLeavingSoon(f)).length;
+  document.getElementById('newCount').textContent = FISH.filter(f => isNewThisMonth(f)).length;
+  document.getElementById('caughtCount').textContent = caughtTotal;
+  document.getElementById('resultsText').textContent = 'Showing ' + filtered.length + ' fish';
+
+  if (filtered.length === 0) {
+    grid.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+
+  grid.innerHTML = filtered.map(fish => {
+    const caught = isCaught(fish);
+    const available = isAvailableNow(fish);
+    const leaving = isLeavingSoon(fish);
+    const isNew = isNewThisMonth(fish);
+    const expanded = state.expanded[fish.id];
+    const icon = fish.conditions === 'Fin' ? '🦈' : fish.conditions === 'Rain' ? '🌧️' : (FISH_ICONS[fish.location] || '🐟');
+    const locClass = LOCATION_COLORS[fish.location] || 'badge-sea';
+    const locLabel = fish.location.replace('River (','').replace(')','');
+
+    let classes = 'fish-card';
+    if (caught) classes += ' caught';
+    if (!available && state.quickFilter === 'available') classes += ' unavailable';
+    if (leaving && !caught) classes += ' leaving-soon';
+    if (isNew && !leaving && !caught) classes += ' new-this-month';
+    if (expanded) classes += ' expanded';
+
+    const shadowLabel = fish.conditions === 'Fin' ? fish.shadow + ' (Fin)' : fish.shadow;
+
+    return `
+      <div class="${classes}" onclick="toggleExpand(${fish.id})" data-id="${fish.id}">
+        <div class="fish-name-row">
+          <span class="fish-icon">${icon}</span>
+          <span class="fish-name">${fish.name}</span>
+        </div>
+        <div class="fish-details">
+          <span class="fish-badge ${locClass}">${locLabel === fish.location ? fish.location : locLabel}</span>
+          <span class="fish-shadow-badge">${shadowLabel}</span>
+        </div>
+        <div class="fish-price">
+          <span class="bell-icon">🔔</span> ${formatPrice(fish.price)} Bells
+        </div>
+        <div class="fish-meta">
+          🕐 ${formatHours(fish.hours)}
+        </div>
+        <div class="fish-months">
+          📅 ${formatMonths(fish)}
+        </div>
+        <div class="fish-tip">
+          💡 ${fish.tips}
+          ${fish.conditions === 'Rain' ? '<br>⚠️ Only appears during rain or snow!' : ''}
+          ${fish.conditions === 'Fin' ? '<br>🦈 Look for a dorsal fin breaking the surface!' : ''}
+          <br>🏷️ CJ Price: ${formatPrice(Math.floor(fish.price * 1.5))} Bells
+        </div>
+        <div class="caught-indicator" onclick="event.stopPropagation(); toggleCaught(${fish.id}, this)">
+          ${caught ? '✓' : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════════════
+//  Event Handlers
+// ══════════════════════════════════════════════════════════
+function setHemisphere(h) {
+  state.hemisphere = h;
+  document.querySelectorAll('.hemisphere-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.hemi === h);
+  });
+  render();
+}
+
+function setQuickFilter(f) {
+  state.quickFilter = f;
+  document.querySelectorAll('#quickFilters .filter-chip').forEach(b => {
+    b.classList.toggle('active', b.dataset.filter === f);
+    b.classList.remove('highlight');
+  });
+  render();
+}
+
+function setLocationFilter(loc) {
+  state.locationFilter = loc;
+  document.querySelectorAll('[data-loc]').forEach(b => {
+    b.classList.toggle('active', b.dataset.loc === loc);
+  });
+  render();
+}
+
+function setShadowFilter(s) {
+  state.shadowFilter = s;
+  document.querySelectorAll('[data-shadow]').forEach(b => {
+    b.classList.toggle('active', b.dataset.shadow === s);
+  });
+  render();
+}
+
+function setMonthFilter(m) {
+  state.monthFilter = m;
+  document.querySelectorAll('[data-month]').forEach(b => {
+    const val = b.dataset.month === 'auto' ? 'auto' : parseInt(b.dataset.month);
+    b.classList.toggle('active', val === m);
+  });
+  render();
+}
+
+function toggleRain() {
+  state.isRaining = !state.isRaining;
+  document.getElementById('rainToggle').classList.toggle('active', state.isRaining);
+  render();
+}
+
+function toggleAdvancedFilters() {
+  const el = document.getElementById('advancedFilters');
+  const show = !el.classList.contains('show');
+  el.classList.toggle('show', show);
+  document.getElementById('filterToggleText').textContent = show ? '▲ Fewer Filters' : '▼ More Filters';
+}
+
+function toggleCaught(id, el) {
+  state.caught[id] = !state.caught[id];
+  if (!state.caught[id]) delete state.caught[id];
+  localStorage.setItem('acnh-fish-caught', JSON.stringify(state.caught));
+  if (el) {
+    el.closest('.fish-card').classList.add('pop');
+    setTimeout(() => el.closest('.fish-card')?.classList.remove('pop'), 300);
+  }
+  render();
+}
+
+function toggleExpand(id) {
+  state.expanded[id] = !state.expanded[id];
+  render();
+}
+
+// Scroll to top button
+window.addEventListener('scroll', () => {
+  document.getElementById('scrollTop').classList.toggle('show', window.scrollY > 400);
+});
+
+// Auto-refresh "available now" every minute
+setInterval(() => {
+  if (state.quickFilter === 'available' || state.monthFilter === 'auto') render();
+}, 60000);
+
+// Initial render
+render();
+</script>
+</body>
+</html>
