@@ -1,7 +1,7 @@
 {
-  "name": "Critterpedia Fish Tracker",
-  "short_name": "Fish Tracker",
-  "description": "Track your Animal Crossing: New Horizons fish collection",
+  "name": "Critterpedia Tracker",
+  "short_name": "Critterpedia",
+  "description": "Track your Animal Crossing: New Horizons fish and bug collections",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#B8DFA4",
