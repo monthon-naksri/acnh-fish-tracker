@@ -664,10 +664,18 @@ const SEA_LOC_COLORS = {
   'Medium':'speed-medium','Fast':'speed-fast','Very Fast':'speed-very-fast'
 };
 
-// Jess's uncaught fish
-const FISH_UNCAUGHT = new Set([9,10,14,15,17,19,29,30,36,37,39,40,46,47,52,54,63,66,67,68,69,73,75,78,79]);
+// Jess's uncaught creatures (updated 24/03/2026)
+const FISH_UNCAUGHT = new Set([9,10,14,15,17,20,29,30,37,39,40,46,47,52,54,63,66,67,68,69,73,75,78,79]);
 const DEFAULT_FISH_CAUGHT = {};
 FISH.forEach(f => { if (!FISH_UNCAUGHT.has(f.id)) DEFAULT_FISH_CAUGHT[f.id] = true; });
+
+const BUGS_UNCAUGHT = new Set([3,4,5,7,10,11,12,14,17,22,24,26,27,28,30,31,34,35,36,37,42,43,44,45,47,48,49,50,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,69,72,79]);
+const DEFAULT_BUGS_CAUGHT = {};
+BUGS.forEach(b => { if (!BUGS_UNCAUGHT.has(b.id)) DEFAULT_BUGS_CAUGHT[b.id] = true; });
+
+const SEA_UNCAUGHT = new Set([22,23,29,33,34,35,37]);
+const DEFAULT_SEA_CAUGHT = {};
+SEA.forEach(s => { if (!SEA_UNCAUGHT.has(s.id)) DEFAULT_SEA_CAUGHT[s.id] = true; });
 
 let state = {
   activeTab: 'fish',
@@ -693,12 +701,14 @@ try {
 try {
   const sb = localStorage.getItem('acnh-bugs-caught');
   if (sb) state.caughtBugs = JSON.parse(sb);
-} catch(e) {}
+  else { state.caughtBugs = {...DEFAULT_BUGS_CAUGHT}; localStorage.setItem('acnh-bugs-caught', JSON.stringify(state.caughtBugs)); }
+} catch(e) { state.caughtBugs = {...DEFAULT_BUGS_CAUGHT}; }
 
 try {
   const ss = localStorage.getItem('acnh-sea-caught');
   if (ss) state.caughtSea = JSON.parse(ss);
-} catch(e) {}
+  else { state.caughtSea = {...DEFAULT_SEA_CAUGHT}; localStorage.setItem('acnh-sea-caught', JSON.stringify(state.caughtSea)); }
+} catch(e) { state.caughtSea = {...DEFAULT_SEA_CAUGHT}; }
 
 // ══════════════════════════════════════════════════════════
 //  Helpers
@@ -1033,10 +1043,10 @@ function resetCaught() {
     state.caughtFish = {...DEFAULT_FISH_CAUGHT};
     localStorage.setItem('acnh-fish-caught', JSON.stringify(state.caughtFish));
   } else if (state.activeTab === 'sea') {
-    state.caughtSea = {};
+    state.caughtSea = {...DEFAULT_SEA_CAUGHT};
     localStorage.setItem('acnh-sea-caught', JSON.stringify(state.caughtSea));
   } else {
-    state.caughtBugs = {};
+    state.caughtBugs = {...DEFAULT_BUGS_CAUGHT};
     localStorage.setItem('acnh-bugs-caught', JSON.stringify(state.caughtBugs));
   }
   render();
