@@ -230,6 +230,14 @@ body {
   font-size: 11px; font-weight: 700; background: #E8E0D0; color: var(--text-secondary);
 }
 
+.speed-badge { padding: 3px 10px; border-radius: var(--radius-badge); font-size: 11px; font-weight: 700; color: white; }
+.speed-stationary { background: #4CAF50; }
+.speed-very-slow { background: #66BB6A; }
+.speed-slow { background: #5BA3D9; }
+.speed-medium { background: #FFA726; }
+.speed-fast { background: #EF5350; }
+.speed-very-fast { background: #C62828; }
+
 .fish-price {
   display: flex; align-items: center; gap: 4px;
   font-size: 14px; font-weight: 800; color: #C4A000; margin-bottom: 6px;
@@ -306,6 +314,7 @@ body {
   <div class="tab-bar">
     <button class="tab-btn active" data-tab="fish" onclick="setTab('fish')">🐟 Fish</button>
     <button class="tab-btn" data-tab="bugs" onclick="setTab('bugs')">🦋 Bugs</button>
+    <button class="tab-btn" data-tab="sea" onclick="setTab('sea')">🐚 Sea</button>
   </div>
   <div class="progress-section">
     <div class="progress-info">
@@ -574,10 +583,57 @@ const BUGS = [
 ];
 
 // ══════════════════════════════════════════════════════════
+//  SEA CREATURES DATA — All 40
+// ══════════════════════════════════════════════════════════
+const SEA = [
+  {id:1,name:"Seaweed",price:600,shadow:"Large",speed:"Stationary",hours:[[0,24]],monthsN:[10,11,12,1,2,3,4,5,6,7],monthsS:[4,5,6,7,8,9,10,11,12,1],conditions:"",tips:"Stationary — just swim over it and dive. Easy catch."},
+  {id:2,name:"Sea Grapes",price:900,shadow:"Small",speed:"Stationary",hours:[[0,24]],monthsN:[6,7,8,9],monthsS:[12,1,2,3],conditions:"",tips:"Stationary. Small shadow — look for the bubbles."},
+  {id:3,name:"Sea Cucumber",price:500,shadow:"Medium",speed:"Very Slow",hours:[[0,24]],monthsN:[11,12,1,2,3,4],monthsS:[5,6,7,8,9,10],conditions:"",tips:"Very slow. Easy catch."},
+  {id:4,name:"Sea Pig",price:10000,shadow:"Small",speed:"Very Fast",hours:[[16,9]],monthsN:[11,12,1,2],monthsS:[5,6,7,8],conditions:"Need 80 sea creatures caught to unlock.",tips:"Very Fast! Dive ahead of the shadow. Night/evening only. 10K bells!"},
+  {id:5,name:"Sea Star",price:500,shadow:"Small",speed:"Very Slow",hours:[[0,24]],monthsN:[1,2,3,4,5,6,7,8,9,10,11,12],monthsS:[1,2,3,4,5,6,7,8,9,10,11,12],conditions:"",tips:"Year-round, very slow. One of the easiest catches."},
+  {id:6,name:"Sea Urchin",price:1700,shadow:"Small",speed:"Slow",hours:[[0,24]],monthsN:[5,6,7,8,9],monthsS:[11,12,1,2,3],conditions:"",tips:"Slow and all day. Straightforward catch."},
+  {id:7,name:"Slate Pencil Urchin",price:2000,shadow:"Medium",speed:"Medium",hours:[[16,9]],monthsN:[5,6,7,8,9],monthsS:[11,12,1,2,3],conditions:"Need 20 sea creatures caught.",tips:"Medium speed. Overnight hours only."},
+  {id:8,name:"Sea Anemone",price:500,shadow:"Large",speed:"Stationary",hours:[[0,24]],monthsN:[1,2,3,4,5,6,7,8,9,10,11,12],monthsS:[1,2,3,4,5,6,7,8,9,10,11,12],conditions:"",tips:"Year-round, stationary, large shadow. Unmissable."},
+  {id:9,name:"Moon Jellyfish",price:600,shadow:"Small",speed:"Very Slow",hours:[[0,24]],monthsN:[7,8,9],monthsS:[1,2,3],conditions:"",tips:"Very slow. Summer months."},
+  {id:10,name:"Sea Slug",price:600,shadow:"Tiny",speed:"Very Slow",hours:[[0,24]],monthsN:[1,2,3,4,5,6,7,8,9,10,11,12],monthsS:[1,2,3,4,5,6,7,8,9,10,11,12],conditions:"",tips:"Tiny shadow — look for bubbles. Very slow. Year-round."},
+  {id:11,name:"Pearl Oyster",price:2800,shadow:"Small",speed:"Medium",hours:[[0,24]],monthsN:[1,2,3,4,5,6,7,8,9,10,11,12],monthsS:[1,2,3,4,5,6,7,8,9,10,11,12],conditions:"Need 20 sea creatures caught.",tips:"Medium speed year-round. Can yield Pearls for Mermaid DIY."},
+  {id:12,name:"Mussel",price:1500,shadow:"Small",speed:"Slow",hours:[[0,24]],monthsN:[6,7,8,9,10,11,12],monthsS:[12,1,2,3,4,5,6],conditions:"",tips:"Slow movement. Easy daytime catch."},
+  {id:13,name:"Oyster",price:1100,shadow:"Small",speed:"Slow",hours:[[0,24]],monthsN:[9,10,11,12,1,2],monthsS:[3,4,5,6,7,8],conditions:"",tips:"Slow, all day. Autumn/winter (NH)."},
+  {id:14,name:"Scallop",price:1200,shadow:"Medium",speed:"Slow",hours:[[0,24]],monthsN:[1,2,3,4,5,6,7,8,9,10,11,12],monthsS:[1,2,3,4,5,6,7,8,9,10,11,12],conditions:"",tips:"Year-round. Give to Pascal for Mermaid DIY recipes!"},
+  {id:15,name:"Whelk",price:1000,shadow:"Small",speed:"Slow",hours:[[0,24]],monthsN:[1,2,3,4,5,6,7,8,9,10,11,12],monthsS:[1,2,3,4,5,6,7,8,9,10,11,12],conditions:"",tips:"Year-round, slow, all day. Easy consistent catch."},
+  {id:16,name:"Turban Shell",price:1000,shadow:"Small",speed:"Slow",hours:[[0,24]],monthsN:[3,4,5,9,10,11,12],monthsS:[3,4,5,6,9,10,11],conditions:"",tips:"Slow. Spring and autumn/winter windows."},
+  {id:17,name:"Abalone",price:2000,shadow:"Medium",speed:"Medium",hours:[[16,9]],monthsN:[6,7,8,9,10,11,12,1],monthsS:[12,1,2,3,4,5,6,7],conditions:"Need 20 sea creatures caught.",tips:"Medium speed, evening/overnight only."},
+  {id:18,name:"Gigas Giant Clam",price:15000,shadow:"Very Large",speed:"Very Fast",hours:[[0,24]],monthsN:[5,6,7,8,9],monthsS:[11,12,1,2,3],conditions:"Need 80 sea creatures caught.",tips:"Very Fast despite huge shadow — dive ahead! 15,000 bells! Highest-value sea creature."},
+  {id:19,name:"Chambered Nautilus",price:1800,shadow:"Medium",speed:"Medium",hours:[[16,9]],monthsN:[3,4,5,6,9,10,11],monthsS:[3,4,5,9,10,11,12],conditions:"Need 20 sea creatures caught.",tips:"Medium speed, evenings only. Two seasonal windows."},
+  {id:20,name:"Octopus",price:1200,shadow:"Medium",speed:"Slow",hours:[[0,24]],monthsN:[1,2,3,4,5,6,7,8,9,10,11,12],monthsS:[1,2,3,4,5,6,7,8,9,10,11,12],conditions:"",tips:"Year-round, slow, all day. Easy."},
+  {id:21,name:"Umbrella Octopus",price:6000,shadow:"Small",speed:"Fast",hours:[[0,24]],monthsN:[3,4,5,9,10,11],monthsS:[3,4,5,9,10,11],conditions:"Need 40 sea creatures caught.",tips:"Fast small shadow — dive ahead. Same months both hemispheres!"},
+  {id:22,name:"Vampire Squid",price:10000,shadow:"Medium",speed:"Very Fast",hours:[[16,9]],monthsN:[5,6,7,8],monthsS:[11,12,1,2],conditions:"Need 80 sea creatures caught.",tips:"Very Fast, night only. Dive well ahead. 10K bells!"},
+  {id:23,name:"Firefly Squid",price:1400,shadow:"Tiny",speed:"Slow",hours:[[21,4]],monthsN:[3,4,5,6],monthsS:[9,10,11,12],conditions:"",tips:"Tiny shadow at night (9PM–4AM). Slow despite small size."},
+  {id:24,name:"Gazami Crab",price:2200,shadow:"Medium",speed:"Medium",hours:[[0,24]],monthsN:[6,7,8,9,10,11],monthsS:[12,1,2,3,4,5],conditions:"Need 20 sea creatures caught.",tips:"Medium speed, all day."},
+  {id:25,name:"Dungeness Crab",price:1900,shadow:"Medium",speed:"Medium",hours:[[0,24]],monthsN:[11,12,1,2,3,4,5],monthsS:[5,6,7,8,9,10,11],conditions:"Need 20 sea creatures caught.",tips:"Medium speed, all day."},
+  {id:26,name:"Snow Crab",price:6000,shadow:"Large",speed:"Fast",hours:[[0,24]],monthsN:[11,12,1,2,3,4],monthsS:[5,6,7,8,9,10],conditions:"Need 40 sea creatures caught.",tips:"Fast but large shadow helps tracking. Dive ahead. 6K bells."},
+  {id:27,name:"Red King Crab",price:8000,shadow:"Large",speed:"Very Fast",hours:[[0,24]],monthsN:[11,12,1,2,3],monthsS:[5,6,7,8,9],conditions:"Need 80 sea creatures caught.",tips:"Very Fast! Large shadow helps tracking. 8K bells!"},
+  {id:28,name:"Acorn Barnacle",price:600,shadow:"Tiny",speed:"Stationary",hours:[[0,24]],monthsN:[1,2,3,4,5,6,7,8,9,10,11,12],monthsS:[1,2,3,4,5,6,7,8,9,10,11,12],conditions:"",tips:"Stationary tiny shadow. Year-round. Easiest possible catch."},
+  {id:29,name:"Spider Crab",price:12000,shadow:"Very Large",speed:"Very Fast",hours:[[0,24]],monthsN:[3,4],monthsS:[9,10],conditions:"Need 80 sea creatures caught.",tips:"Very Fast + huge shadow. Only 2 months! Dive well ahead. 12K bells!"},
+  {id:30,name:"Tiger Prawn",price:3000,shadow:"Small",speed:"Medium",hours:[[16,9]],monthsN:[6,7,8,9],monthsS:[12,1,2,3],conditions:"Need 20 sea creatures caught.",tips:"Medium speed, evening/night. Small shadow — track bubbles."},
+  {id:31,name:"Sweet Shrimp",price:1400,shadow:"Small",speed:"Slow",hours:[[16,9]],monthsN:[9,10,11,12,1,2],monthsS:[3,4,5,6,7,8],conditions:"",tips:"Slow, small, evenings only. Easy once spotted."},
+  {id:32,name:"Mantis Shrimp",price:2500,shadow:"Small",speed:"Medium",hours:[[16,9]],monthsN:[1,2,3,4,5,6,7,8,9,10,11,12],monthsS:[1,2,3,4,5,6,7,8,9,10,11,12],conditions:"Need 20 sea creatures caught.",tips:"Medium speed, evenings/night, year-round. Dive ahead."},
+  {id:33,name:"Spiny Lobster",price:5000,shadow:"Large",speed:"Fast",hours:[[21,4]],monthsN:[10,11,12],monthsS:[4,5,6],conditions:"Need 40 sea creatures caught.",tips:"Fast, large shadow, 9PM–4AM only. Autumn (NH). 5K bells."},
+  {id:34,name:"Lobster",price:4500,shadow:"Large",speed:"Fast",hours:[[0,24]],monthsN:[12,1,4,5,6],monthsS:[6,7,10,11,12],conditions:"Need 40 sea creatures caught.",tips:"Fast, large shadow, all day. Two windows per year."},
+  {id:35,name:"Giant Isopod",price:12000,shadow:"Medium",speed:"Very Fast",hours:[[9,16],[21,4]],monthsN:[7,8,9,10],monthsS:[1,2,3,4],conditions:"",tips:"Very Fast! Two time windows: 9AM–4PM and 9PM–4AM. NOT available 4–9PM. 12K bells!"},
+  {id:36,name:"Horseshoe Crab",price:2500,shadow:"Medium",speed:"Medium",hours:[[21,4]],monthsN:[7,8,9],monthsS:[1,2,3],conditions:"Need 20 sea creatures caught.",tips:"Medium speed, 9PM–4AM only. Summer nights."},
+  {id:37,name:"Sea Pineapple",price:1500,shadow:"Small",speed:"Slow",hours:[[0,24]],monthsN:[4,5,6,7,8],monthsS:[10,11,12,1,2],conditions:"",tips:"Slow, all day. Easy catch."},
+  {id:38,name:"Spotted Garden Eel",price:1100,shadow:"Small",speed:"Slow",hours:[[4,21]],monthsN:[5,6,7,8,9,10],monthsS:[11,12,1,2,3,4],conditions:"",tips:"Daytime only (4AM–9PM) — opposite to most rare creatures. Slow. Easy."},
+  {id:39,name:"Flatworm",price:700,shadow:"Tiny",speed:"Very Slow",hours:[[16,9]],monthsN:[8,9],monthsS:[2,3],conditions:"",tips:"Tiny shadow, very slow. Only 2 months (NH)! Evening/night."},
+  {id:40,name:"Venus' Flower Basket",price:5000,shadow:"Medium",speed:"Fast",hours:[[0,24]],monthsN:[10,11,12,1,2],monthsS:[4,5,6,7,8],conditions:"Need 40 sea creatures caught.",tips:"Fast for a medium shadow. Dive ahead. 5K bells."},
+];
+
+// ══════════════════════════════════════════════════════════
 //  App State
 // ══════════════════════════════════════════════════════════
 const MONTH_NAMES = ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const SHADOW_ORDER = {'Tiny':1,'Small':2,'Medium':3,'Large':4,'Narrow':4,'Very Large':5,'Huge':6};
+const SPEED_ORDER = {'Stationary':1,'Very Slow':2,'Slow':3,'Medium':4,'Fast':5,'Very Fast':6};
 
 const FISH_LOC_COLORS = {
   'River':'badge-river','Pond':'badge-pond','Sea':'badge-sea',
@@ -598,6 +654,15 @@ const BUG_LOC_FILTERS = [
   {key:'Flowers',label:'🌸 Flowers'},{key:'Ground',label:'🌱 Ground'},
   {key:'Water',label:'💧 Water'},{key:'Shore',label:'🏖️ Shore'},{key:'Special',label:'⭐ Special'}
 ];
+const SEA_SPEED_FILTERS = [
+  {key:'all',label:'All'},{key:'Stationary',label:'🧘 Stationary'},{key:'Very Slow',label:'🐢 Very Slow'},
+  {key:'Slow',label:'🐌 Slow'},{key:'Medium',label:'🏊 Medium'},
+  {key:'Fast',label:'⚡ Fast'},{key:'Very Fast',label:'🔥 Very Fast'}
+];
+const SEA_LOC_COLORS = {
+  'Stationary':'speed-stationary','Very Slow':'speed-very-slow','Slow':'speed-slow',
+  'Medium':'speed-medium','Fast':'speed-fast','Very Fast':'speed-very-fast'
+};
 
 // Jess's uncaught fish
 const FISH_UNCAUGHT = new Set([9,10,14,15,17,19,29,30,36,37,39,40,46,47,52,54,63,66,67,68,69,73,75,78,79]);
@@ -614,6 +679,7 @@ let state = {
   isRaining: false,
   caughtFish: {},
   caughtBugs: {},
+  caughtSea: {},
   expanded: {}
 };
 
@@ -629,13 +695,18 @@ try {
   if (sb) state.caughtBugs = JSON.parse(sb);
 } catch(e) {}
 
+try {
+  const ss = localStorage.getItem('acnh-sea-caught');
+  if (ss) state.caughtSea = JSON.parse(ss);
+} catch(e) {}
+
 // ══════════════════════════════════════════════════════════
 //  Helpers
 // ══════════════════════════════════════════════════════════
-function getData() { return state.activeTab === 'fish' ? FISH : BUGS; }
-function getCaught() { return state.activeTab === 'fish' ? state.caughtFish : state.caughtBugs; }
-function getCaughtKey() { return state.activeTab === 'fish' ? 'acnh-fish-caught' : 'acnh-bugs-caught'; }
-function getTotal() { return 80; }
+function getData() { return state.activeTab === 'fish' ? FISH : state.activeTab === 'bugs' ? BUGS : SEA; }
+function getCaught() { return state.activeTab === 'fish' ? state.caughtFish : state.activeTab === 'bugs' ? state.caughtBugs : state.caughtSea; }
+function getCaughtKey() { return state.activeTab === 'fish' ? 'acnh-fish-caught' : state.activeTab === 'bugs' ? 'acnh-bugs-caught' : 'acnh-sea-caught'; }
+function getTotal() { return state.activeTab === 'sea' ? 40 : 80; }
 function getCurrentMonth() { return state.monthFilter === 'auto' ? new Date().getMonth() + 1 : state.monthFilter; }
 function getCurrentHour() { return new Date().getHours(); }
 function getNextMonth(m) { return m === 12 ? 1 : m + 1; }
@@ -696,6 +767,17 @@ function getIcon(item) {
     if (item.conditions === 'Rain') return '🌧️';
     return {River:'🐟',Pond:'🐸',Sea:'🐠',Pier:'🎣','River (Clifftop)':'🏔️','River (Mouth)':'🌊'}[item.location] || '🐟';
   }
+  if (state.activeTab === 'sea') {
+    const n = item.name.toLowerCase();
+    if (n.includes('crab')||n.includes('lobster')||n.includes('barnacle')) return '🦀';
+    if (n.includes('squid')||n.includes('octopus')||n.includes('nautilus')) return '🦑';
+    if (n.includes('shrimp')||n.includes('prawn')) return '🦐';
+    if (n.includes('sea slug')||n.includes('flatworm')) return '🐌';
+    if (n.includes('star')||n.includes('urchin')||n.includes('cucumber')||n.includes('anemone')||n.includes('coral')) return '⭐';
+    if (n.includes('jellyfish')||n.includes('moon jelly')) return '🪼';
+    if (n.includes('pearl')) return '🫧';
+    return '🐚';
+  }
   const n = item.name.toLowerCase();
   if (n.includes('butterfly')||n.includes('birdwing')||n.includes('emperor b')||n.includes('moth')||n.includes('kite')) return '🦋';
   if (n.includes('beetle')||n.includes('stag')||n.includes('dynastid')||n.includes('hercules')||n.includes('atlas')||n.includes('elephant')||n.includes('scarab')||n.includes('weevil')) return '🪲';
@@ -713,6 +795,7 @@ function getIcon(item) {
 
 function getLocBadgeClass(item) {
   if (state.activeTab === 'fish') return FISH_LOC_COLORS[item.location] || 'badge-sea';
+  if (state.activeTab === 'sea') return SEA_LOC_COLORS[item.speed] || 'speed-medium';
   return BUG_LOC_COLORS[item.locGroup] || 'badge-ground';
 }
 
@@ -720,12 +803,14 @@ function getLocLabel(item) {
   if (state.activeTab === 'fish') {
     return item.location.replace('River (','').replace(')','');
   }
+  if (state.activeTab === 'sea') return item.speed;
   return item.location;
 }
 
 function matchesLocationFilter(item) {
   if (state.locationFilter === 'all') return true;
   if (state.activeTab === 'fish') return item.location === state.locationFilter;
+  if (state.activeTab === 'sea') return item.speed === state.locationFilter;
   return item.locGroup === state.locationFilter;
 }
 
@@ -745,7 +830,7 @@ function getFilteredData() {
 
   list = list.filter(f => matchesLocationFilter(f));
 
-  if (state.activeTab === 'fish' && state.shadowFilter !== 'all') {
+  if ((state.activeTab === 'fish' || state.activeTab === 'sea') && state.shadowFilter !== 'all') {
     list = list.filter(f => f.shadow === state.shadowFilter);
   }
 
@@ -758,6 +843,7 @@ function getFilteredData() {
     case 'price-desc': list.sort((a,b) => b.price - a.price); break;
     case 'price-asc': list.sort((a,b) => a.price - b.price); break;
     case 'location': list.sort((a,b) => {
+      if (state.activeTab === 'sea') return (SPEED_ORDER[a.speed]||4) - (SPEED_ORDER[b.speed]||4) || a.name.localeCompare(b.name);
       const al = state.activeTab === 'fish' ? a.location : a.locGroup;
       const bl = state.activeTab === 'fish' ? b.location : b.locGroup;
       return al.localeCompare(bl) || a.name.localeCompare(b.name);
@@ -770,7 +856,7 @@ function getFilteredData() {
 //  Render
 // ══════════════════════════════════════════════════════════
 function buildLocationFilters() {
-  const filters = state.activeTab === 'fish' ? FISH_LOC_FILTERS : BUG_LOC_FILTERS;
+  const filters = state.activeTab === 'fish' ? FISH_LOC_FILTERS : state.activeTab === 'bugs' ? BUG_LOC_FILTERS : SEA_SPEED_FILTERS;
   const container = document.getElementById('locationFilters');
   container.innerHTML = filters.map(f =>
     `<button class="filter-chip${state.locationFilter===f.key?' active':''}" data-loc="${f.key}" onclick="setLocationFilter('${f.key}')">${f.label}</button>`
@@ -784,25 +870,26 @@ function render() {
   const grid = document.getElementById('fishGrid');
   const empty = document.getElementById('emptyState');
   const isFish = state.activeTab === 'fish';
-  const multiplier = isFish ? 1.5 : 1.5; // CJ for fish, Flick for bugs
-  const buyerName = isFish ? 'CJ' : 'Flick';
+  const isSea = state.activeTab === 'sea';
+  const multiplier = 1.5; // CJ for fish, Flick for bugs (no buyer for sea)
+  const buyerName = isFish ? 'CJ' : isSea ? null : 'Flick';
 
   // Counts
   const caughtTotal = data.filter(f => !!caught[f.id]).length;
   document.getElementById('progressCount').textContent = caughtTotal + ' / ' + getTotal();
   document.getElementById('progressFill').style.width = (caughtTotal / getTotal() * 100) + '%';
-  document.getElementById('progressLabel').textContent = isFish ? '🏛️ Fish Collection' : '🏛️ Bug Collection';
-  document.getElementById('logoSub').textContent = isFish ? 'Fish Tracker' : 'Bug Tracker';
+  document.getElementById('progressLabel').textContent = isFish ? '🏛️ Fish Collection' : isSea ? '🏛️ Sea Creature Collection' : '🏛️ Bug Collection';
+  document.getElementById('logoSub').textContent = isFish ? 'Fish Tracker' : isSea ? 'Sea Creature Tracker' : 'Bug Tracker';
   document.getElementById('availableCount').textContent = data.filter(f => isAvailableNow(f)).length;
   document.getElementById('uncaughtCount').textContent = data.filter(f => !caught[f.id]).length;
   document.getElementById('leavingCount').textContent = data.filter(f => isLeavingSoon(f)).length;
   document.getElementById('newCount').textContent = data.filter(f => isNewThisMonth(f)).length;
   document.getElementById('caughtCount').textContent = caughtTotal;
   document.getElementById('resultsText').textContent = 'Showing ' + filtered.length;
-  document.getElementById('emptyIcon').textContent = isFish ? '🐟' : '🐛';
+  document.getElementById('emptyIcon').textContent = isFish ? '🐟' : isSea ? '🐚' : '🐛';
 
-  // Show/hide shadow filter
-  document.getElementById('shadowFilterGroup').style.display = isFish ? '' : 'none';
+  // Show/hide shadow filter (fish and sea creatures have shadows)
+  document.getElementById('shadowFilterGroup').style.display = (isFish || isSea) ? '' : 'none';
 
   if (filtered.length === 0) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
   empty.style.display = 'none';
@@ -828,6 +915,10 @@ function render() {
       const shadowLabel = item.conditions === 'Fin' ? item.shadow + ' (Fin)' : item.shadow;
       detailBadges += `<span class="fish-shadow-badge">${shadowLabel}</span>`;
     }
+    if (isSea) {
+      detailBadges += `<span class="fish-shadow-badge">${item.shadow}</span>`;
+      detailBadges += `<span class="speed-badge ${SEA_LOC_COLORS[item.speed] || 'speed-medium'}">${item.speed}</span>`;
+    }
 
     return `
       <div class="${classes}" onclick="toggleExpand('${state.activeTab}_${item.id}')" data-id="${item.id}">
@@ -844,7 +935,7 @@ function render() {
           ${item.conditions === 'Rain' ? '<br>⚠️ Only appears during rain or snow!' : ''}
           ${isFish && item.conditions === 'Fin' ? '<br>🦈 Look for a dorsal fin breaking the surface!' : ''}
           ${item.conditions && !['Rain','Fin',''].includes(item.conditions) ? '<br>⚠️ ' + item.conditions : ''}
-          <br>🏷️ ${buyerName} Price: ${formatPrice(Math.floor(item.price * multiplier))} Bells
+          ${buyerName ? '<br>🏷️ ' + buyerName + ' Price: ' + formatPrice(Math.floor(item.price * multiplier)) + ' Bells' : ''}
         </div>
         <div class="caught-indicator" onclick="event.stopPropagation(); toggleCaught(${item.id}, this)">
           ${c ? '✓' : ''}
@@ -936,11 +1027,14 @@ function toggleExpand(key) {
 }
 
 function resetCaught() {
-  const label = state.activeTab === 'fish' ? "fish" : "bugs";
+  const label = state.activeTab === 'fish' ? "fish" : state.activeTab === 'sea' ? "sea creatures" : "bugs";
   if (!confirm('Reset all ' + label + ' caught/uncaught back to defaults?')) return;
   if (state.activeTab === 'fish') {
     state.caughtFish = {...DEFAULT_FISH_CAUGHT};
     localStorage.setItem('acnh-fish-caught', JSON.stringify(state.caughtFish));
+  } else if (state.activeTab === 'sea') {
+    state.caughtSea = {};
+    localStorage.setItem('acnh-sea-caught', JSON.stringify(state.caughtSea));
   } else {
     state.caughtBugs = {};
     localStorage.setItem('acnh-bugs-caught', JSON.stringify(state.caughtBugs));
