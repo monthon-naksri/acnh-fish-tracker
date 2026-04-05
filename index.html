@@ -681,7 +681,7 @@ let state = {
   activeTab: 'fish',
   hemisphere: 'south',
   caughtFilter: 'uncaught',
-  timeFilter: 'all',
+  timeFilter: new Set(),
   locationFilter: 'all',
   shadowFilter: 'all',
   monthFilter: 'auto',
@@ -835,10 +835,10 @@ function getFilteredData() {
   if (state.caughtFilter === 'uncaught') list = list.filter(f => !isCaught(f));
   else if (state.caughtFilter === 'caught') list = list.filter(f => isCaught(f));
 
-  // Time filter (combines with caught filter)
-  if (state.timeFilter === 'available') list = list.filter(f => isAvailableNow(f));
-  else if (state.timeFilter === 'leaving') list = list.filter(f => isLeavingSoon(f));
-  else if (state.timeFilter === 'new') list = list.filter(f => isNewThisMonth(f));
+  // Time filter (combines with caught filter; multiple can be active simultaneously)
+  if (state.timeFilter.has('available')) list = list.filter(f => isAvailableNow(f));
+  if (state.timeFilter.has('leaving')) list = list.filter(f => isLeavingSoon(f));
+  if (state.timeFilter.has('new')) list = list.filter(f => isNewThisMonth(f));
 
   list = list.filter(f => matchesLocationFilter(f));
 
@@ -979,24 +979,25 @@ function setHemisphere(h) {
 function setQuickFilter(f) {
   if (f === 'all') {
     state.caughtFilter = 'all';
-    state.timeFilter = 'all';
+    state.timeFilter.clear();
   } else if (f === 'uncaught' || f === 'caught') {
     state.caughtFilter = state.caughtFilter === f ? 'all' : f;
   } else {
-    state.timeFilter = state.timeFilter === f ? 'all' : f;
+    if (state.timeFilter.has(f)) state.timeFilter.delete(f);
+    else state.timeFilter.add(f);
   }
   updateQuickFilterUI();
   render();
 }
 
 function updateQuickFilterUI() {
-  const allActive = state.caughtFilter === 'all' && state.timeFilter === 'all';
+  const allActive = state.caughtFilter === 'all' && state.timeFilter.size === 0;
   document.querySelectorAll('#quickFilters .filter-chip').forEach(b => {
     const f = b.dataset.filter;
     let active = false;
     if (f === 'all') active = allActive;
     else if (f === 'uncaught' || f === 'caught') active = state.caughtFilter === f;
-    else active = state.timeFilter === f;
+    else active = state.timeFilter.has(f);
     b.classList.toggle('active', active);
     b.classList.remove('highlight');
   });
@@ -1078,7 +1079,7 @@ window.addEventListener('scroll', () => {
 
 // Auto-refresh every minute
 setInterval(() => {
-  if (state.timeFilter === 'available' || state.monthFilter === 'auto') render();
+  if (state.timeFilter.has('available') || state.monthFilter === 'auto') render();
 }, 60000);
 
 // Init
