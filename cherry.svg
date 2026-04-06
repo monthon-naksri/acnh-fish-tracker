@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Main stem vertical -->
+  <line x1="50" y1="52" x2="50" y2="18" stroke="#4BAE3E" stroke-width="5.5" stroke-linecap="round"/>
+  <!-- Left branch -->
+  <line x1="50" y1="52" x2="29" y2="66" stroke="#4BAE3E" stroke-width="5.5" stroke-linecap="round"/>
+  <!-- Right branch -->
+  <line x1="50" y1="52" x2="71" y2="66" stroke="#4BAE3E" stroke-width="5.5" stroke-linecap="round"/>
+  <!-- Leaf at top -->
+  <ellipse cx="50" cy="13" rx="6" ry="8" fill="#5CC04A"/>
+  <!-- Left cherry body -->
+  <circle cx="29" cy="75" r="18" fill="#E03535"/>
+  <!-- Left cherry shadow crescent -->
+  <path d="M 14 80 A 18 18 0 0 0 44 80" fill="#C42828" opacity="0.4"/>
+  <!-- Left cherry highlight -->
+  <circle cx="22" cy="67" r="5.5" fill="#F08080" opacity="0.55"/>
+  <!-- Right cherry body -->
+  <circle cx="71" cy="75" r="18" fill="#E03535"/>
+  <!-- Right cherry shadow crescent -->
+  <path d="M 56 80 A 18 18 0 0 0 86 80" fill="#C42828" opacity="0.4"/>
+  <!-- Right cherry highlight -->
+  <circle cx="64" cy="67" r="5.5" fill="#F08080" opacity="0.55"/>
+</svg>
