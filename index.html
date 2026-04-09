@@ -837,12 +837,12 @@ function getFilteredData() {
   if (state.caughtFilter === 'uncaught') list = list.filter(f => !isCaught(f));
   else if (state.caughtFilter === 'caught') list = list.filter(f => isCaught(f));
 
-  // Time filter — OR logic: show items matching ANY active time filter
+  // Time filter — AND logic: show items matching ALL active time filters
   if (state.timeFilter.size > 0) {
     list = list.filter(f =>
-      (state.timeFilter.has('available') && isAvailableNow(f)) ||
-      (state.timeFilter.has('leaving') && isLeavingSoon(f)) ||
-      (state.timeFilter.has('new') && isNewThisMonth(f))
+      (!state.timeFilter.has('available') || isAvailableNow(f)) &&
+      (!state.timeFilter.has('leaving') || isLeavingSoon(f)) &&
+      (!state.timeFilter.has('new') || isNewThisMonth(f))
     );
   }
 
