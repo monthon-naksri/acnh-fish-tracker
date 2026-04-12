@@ -294,6 +294,79 @@ body {
 
 @keyframes pop { 0%{transform:scale(1)} 50%{transform:scale(1.15)} 100%{transform:scale(1)} }
 .pop { animation: pop 0.3s ease; }
+
+/* ── 5-tab layout ── */
+.tab-btn { font-size: 12px; padding: 7px 4px; }
+
+/* ── Art cards ── */
+.art-card {
+  background: var(--bg-card); border-radius: var(--radius-card);
+  padding: 14px; box-shadow: var(--shadow-card);
+  cursor: pointer; transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
+  position: relative; border: 2px solid transparent; user-select: none;
+}
+.art-card:active { transform: scale(0.97); }
+.art-card.donated { background: var(--bg-card-caught); border-color: #D8D0B8; }
+
+.art-name-row { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 8px; }
+.art-icon { font-size: 24px; flex-shrink: 0; margin-top: 2px; }
+.art-name { font-size: 15px; font-weight: 800; color: var(--text-primary); display: block; line-height: 1.2; }
+.art-realname { font-size: 11px; color: var(--text-secondary); font-weight: 600; font-style: italic; margin-top: 2px; display: block; }
+
+.art-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.art-type-badge {
+  padding: 3px 10px; border-radius: var(--radius-badge);
+  font-size: 11px; font-weight: 700; color: white;
+  background: var(--badge-special);
+}
+.fake-badge {
+  padding: 3px 10px; border-radius: var(--radius-badge);
+  font-size: 11px; font-weight: 700;
+}
+.fake-badge.has-fake { background: #FFE4B0; color: #A06000; }
+.fake-badge.always-real { background: #D4F4D4; color: #2A7A2A; }
+
+.art-fake-tell {
+  font-size: 12px; color: var(--text-secondary); font-weight: 600;
+  line-height: 1.5; padding: 7px 10px; background: #FFF8E8;
+  border-radius: 8px; border-left: 3px solid #F5C518; margin-top: 4px;
+}
+.art-card.donated .art-fake-tell { display: none; }
+
+/* ── Fossil groups ── */
+.fossil-group { margin-bottom: 10px; }
+.fossil-group-header {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--bg-card); border-radius: 12px 12px 0 0;
+  padding: 10px 14px; box-shadow: var(--shadow-soft);
+  font-size: 13px; font-weight: 800; color: var(--text-primary);
+  border-bottom: 1px solid #E8E0D0;
+}
+.fossil-group-header.complete { background: var(--bg-card-caught); }
+.group-progress { font-size: 12px; font-weight: 700; color: var(--text-secondary); }
+.fossil-pieces { background: var(--bg-card); border-radius: 0 0 12px 12px; box-shadow: var(--shadow-soft); overflow: hidden; }
+.fossil-piece {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 14px; border-bottom: 1px solid #F0E8D8;
+  cursor: pointer; transition: background 0.15s; user-select: none;
+}
+.fossil-piece:last-child { border-bottom: none; }
+.fossil-piece:active { background: #F0E8D8; }
+.fossil-piece.donated { background: #F5F0E4; }
+.fossil-piece-name { font-size: 13px; font-weight: 700; color: var(--text-primary); }
+.fossil-piece.donated .fossil-piece-name { color: var(--text-light); text-decoration: line-through; }
+.fossil-check {
+  width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: #E8E0D0; font-size: 13px; transition: all 0.2s;
+}
+.fossil-piece.donated .fossil-check { background: var(--accent-green); color: white; box-shadow: 0 2px 6px rgba(76,175,80,0.4); }
+
+/* Art/Fossil standalone grid adjusts to wider cards */
+.art-grid { display: grid; grid-template-columns: 1fr; gap: 10px; padding: 8px 16px; }
+@media (min-width: 480px) { .art-grid { grid-template-columns: 1fr 1fr; } }
+@media (min-width: 768px) { .art-grid { grid-template-columns: 1fr 1fr 1fr; } }
+.fossil-list { padding: 8px 16px; display: flex; flex-direction: column; gap: 12px; }
 </style>
 </head>
 <body>
@@ -317,6 +390,8 @@ body {
     <button class="tab-btn active" data-tab="fish" onclick="setTab('fish')">🐟 Fish</button>
     <button class="tab-btn" data-tab="bugs" onclick="setTab('bugs')">🦋 Bugs</button>
     <button class="tab-btn" data-tab="sea" onclick="setTab('sea')">🐚 Sea</button>
+    <button class="tab-btn" data-tab="art" onclick="setTab('art')">🎨 Art</button>
+    <button class="tab-btn" data-tab="fossils" onclick="setTab('fossils')">🦴 Fossils</button>
   </div>
   <div class="progress-section">
     <div class="progress-info">
@@ -329,8 +404,8 @@ body {
   </div>
 </header>
 
-<!-- Quick Filters -->
-<div class="filter-section">
+<!-- Quick Filters (creatures) -->
+<div class="filter-section" id="creatureFilters">
   <div class="filter-row" id="quickFilters">
     <button class="filter-chip" data-filter="all" onclick="setQuickFilter('all')">All</button>
     <button class="filter-chip" data-filter="available" onclick="setQuickFilter('available')">🎣 Now <span class="chip-count" id="availableCount">0</span></button>
@@ -338,6 +413,26 @@ body {
     <button class="filter-chip" data-filter="leaving" onclick="setQuickFilter('leaving')">⚠️ Leaving <span class="chip-count" id="leavingCount">0</span></button>
     <button class="filter-chip" data-filter="new" onclick="setQuickFilter('new')">✨ New <span class="chip-count" id="newCount">0</span></button>
     <button class="filter-chip" data-filter="caught" onclick="setQuickFilter('caught')">✅ Done <span class="chip-count" id="caughtCount">0</span></button>
+  </div>
+</div>
+
+<!-- Art Filters -->
+<div class="filter-section" id="artFilters" style="display:none">
+  <div class="filter-row">
+    <button class="filter-chip" data-artfilter="all" onclick="setArtFilter('all')">All <span class="chip-count" id="artAllCount">0</span></button>
+    <button class="filter-chip active" data-artfilter="need" onclick="setArtFilter('need')">❌ Need <span class="chip-count" id="artNeedCount">0</span></button>
+    <button class="filter-chip" data-artfilter="hasFake" onclick="setArtFilter('hasFake')">⚠️ Check Fakes</button>
+    <button class="filter-chip" data-artfilter="alwaysReal" onclick="setArtFilter('alwaysReal')">✅ Safe to Buy</button>
+    <button class="filter-chip" data-artfilter="done" onclick="setArtFilter('done')">🏛️ Donated <span class="chip-count" id="artDoneCount">0</span></button>
+  </div>
+</div>
+
+<!-- Fossil Filters -->
+<div class="filter-section" id="fossilFilters" style="display:none">
+  <div class="filter-row">
+    <button class="filter-chip" data-fossilfilter="all" onclick="setFossilFilter('all')">All <span class="chip-count" id="fossilAllCount">0</span></button>
+    <button class="filter-chip active" data-fossilfilter="need" onclick="setFossilFilter('need')">❌ Need <span class="chip-count" id="fossilNeedCount">0</span></button>
+    <button class="filter-chip" data-fossilfilter="done" onclick="setFossilFilter('done')">🏛️ Donated <span class="chip-count" id="fossilDoneCount">0</span></button>
   </div>
 </div>
 
@@ -349,7 +444,7 @@ body {
 
 <!-- Advanced Filters -->
 <div class="btn-row">
-  <button class="toggle-filters-btn" onclick="toggleAdvancedFilters()"><span id="filterToggleText">▼ More Filters</span></button>
+  <button class="toggle-filters-btn" id="advancedFiltersToggle" onclick="toggleAdvancedFilters()"><span id="filterToggleText">▼ More Filters</span></button>
   <button class="toggle-filters-btn" onclick="resetCaught()">🔄 Reset List</button>
 </div>
 
@@ -666,6 +761,139 @@ const SEA_LOC_COLORS = {
   'Medium':'speed-medium','Fast':'speed-fast','Very Fast':'speed-very-fast'
 };
 
+// ══════════════════════════════════════════════════════════
+//  ART DATA — All 43 Pieces (30 paintings + 13 statues)
+//  Source: Nookipedia (nookipedia.com/wiki/Art/New_Horizons)
+// ══════════════════════════════════════════════════════════
+const ART = [
+  // PAINTINGS
+  {id:'academic-painting',  name:'Academic Painting',       realName:'Vitruvian Man',                          artist:'Leonardo da Vinci',       type:'Painting', hasFake:true,  fakeTell:'Coffee stain in top right corner'},
+  {id:'amazing-painting',   name:'Amazing Painting',        realName:'The Night Watch',                        artist:'Rembrandt van Rijn',       type:'Painting', hasFake:true,  fakeTell:'Man on far left has no hat'},
+  {id:'basic-painting',     name:'Basic Painting',          realName:'The Blue Boy',                           artist:'Thomas Gainsborough',      type:'Painting', hasFake:true,  fakeTell:'Boy has bowl cut with long bangs over his face'},
+  {id:'calm-painting',      name:'Calm Painting',           realName:'A Sunday on La Grande Jatte',            artist:'Georges Seurat',           type:'Painting', hasFake:false, fakeTell:''},
+  {id:'common-painting',    name:'Common Painting',         realName:'The Gleaners',                           artist:'Jean-François Millet',     type:'Painting', hasFake:false, fakeTell:''},
+  {id:'detailed-painting',  name:'Detailed Painting',       realName:'Ajisai Sōkeizu (Hydrangeas)',            artist:'Itō Jakuchū',              type:'Painting', hasFake:true,  fakeTell:'Flowers are purple instead of blue; missing signature stamp'},
+  {id:'dynamic-painting',   name:'Dynamic Painting',        realName:'The Great Wave off Kanagawa',            artist:'Katsushika Hokusai',       type:'Painting', hasFake:false, fakeTell:''},
+  {id:'famous-painting',    name:'Famous Painting',         realName:'Mona Lisa',                              artist:'Leonardo da Vinci',        type:'Painting', hasFake:true,  fakeTell:'Woman\'s eyebrows are raised'},
+  {id:'flowery-painting',   name:'Flowery Painting',        realName:'Sunflowers',                             artist:'Vincent van Gogh',         type:'Painting', hasFake:false, fakeTell:''},
+  {id:'glowing-painting',   name:'Glowing Painting',        realName:'The Fighting Temeraire',                 artist:'J.M.W. Turner',            type:'Painting', hasFake:false, fakeTell:''},
+  {id:'graceful-painting',  name:'Graceful Painting',       realName:'Beauty Looking Back',                    artist:'Hishikawa Moronobu',       type:'Painting', hasFake:true,  fakeTell:'Missing white collar; woman fills whole frame; facing wrong way'},
+  {id:'jolly-painting',     name:'Jolly Painting',          realName:'Summer (Vertumnus)',                     artist:'Giuseppe Arcimboldo',      type:'Painting', hasFake:true,  fakeTell:'Missing artichoke at torso'},
+  {id:'moody-painting',     name:'Moody Painting',          realName:'The Sower',                              artist:'Jean-François Millet',     type:'Painting', hasFake:false, fakeTell:''},
+  {id:'moving-painting',    name:'Moving Painting',         realName:'The Birth of Venus',                     artist:'Sandro Botticelli',        type:'Painting', hasFake:true,  fakeTell:'Sky visible behind woman; floating flowers instead of trees on right'},
+  {id:'mysterious-painting',name:'Mysterious Painting',     realName:'Isle of the Dead',                       artist:'Arnold Böcklin',           type:'Painting', hasFake:false, fakeTell:''},
+  {id:'nice-painting',      name:'Nice Painting',           realName:'The Fifer',                              artist:'Édouard Manet',            type:'Painting', hasFake:false, fakeTell:''},
+  {id:'perfect-painting',   name:'Perfect Painting',        realName:'Apples and Oranges',                     artist:'Paul Cézanne',             type:'Painting', hasFake:false, fakeTell:''},
+  {id:'proper-painting',    name:'Proper Painting',         realName:'A Bar at the Folies-Bergère',            artist:'Édouard Manet',            type:'Painting', hasFake:false, fakeTell:''},
+  {id:'quaint-painting',    name:'Quaint Painting',         realName:'The Milkmaid',                           artist:'Johannes Vermeer',         type:'Painting', hasFake:true,  fakeTell:'Stream of milk from jug is wide and bold (real: thin, delicate)'},
+  {id:'scary-painting',     name:'Scary Painting',          realName:'Ōtani Oniji III as Yakko Edobei',        artist:'Tōshūsai Sharaku',         type:'Painting', hasFake:true,  fakeTell:'Eyebrows slant upward; man periodically smiles'},
+  {id:'scenic-painting',    name:'Scenic Painting',         realName:'The Hunters in the Snow',                artist:'Pieter Bruegel the Elder', type:'Painting', hasFake:true,  fakeTell:'Only one hunter bottom-left (real: two hunters)'},
+  {id:'serene-painting',    name:'Serene Painting',         realName:'Lady with an Ermine',                    artist:'Leonardo da Vinci',        type:'Painting', hasFake:true,  fakeTell:'Ermine has patterned/spotted fur (real: pure white)'},
+  {id:'sinking-painting',   name:'Sinking Painting',        realName:'Ophelia',                                artist:'John Everett Millais',     type:'Painting', hasFake:false, fakeTell:''},
+  {id:'solemn-painting',    name:'Solemn Painting',         realName:'Las Meninas',                            artist:'Diego Velázquez',          type:'Painting', hasFake:true,  fakeTell:'Man\'s right arm is raised/waving (real: arm hidden behind curtain)'},
+  {id:'twinkling-painting', name:'Twinkling Painting',      realName:'The Starry Night',                       artist:'Vincent van Gogh',         type:'Painting', hasFake:false, fakeTell:''},
+  {id:'warm-painting',      name:'Warm Painting',           realName:'The Clothed Maja',                       artist:'Francisco de Goya',        type:'Painting', hasFake:false, fakeTell:''},
+  {id:'wild-painting-left', name:'Wild Painting Left Half', realName:'Fūjin and Raijin Screen (left — Raijin)',artist:'Tawaraya Sōtatsu',         type:'Painting', hasFake:true,  fakeTell:'Raijin (thunder god, left) is green (real: white)'},
+  {id:'wild-painting-right',name:'Wild Painting Right Half',realName:'Fūjin and Raijin Screen (right — Fūjin)',artist:'Tawaraya Sōtatsu',        type:'Painting', hasFake:true,  fakeTell:'Fūjin (wind god, right) is white (real: green)'},
+  {id:'wistful-painting',   name:'Wistful Painting',        realName:'Girl with a Pearl Earring',              artist:'Johannes Vermeer',         type:'Painting', hasFake:true,  fakeTell:'Star-shaped earring; woman periodically opens and closes her eyes'},
+  {id:'worthy-painting',    name:'Worthy Painting',         realName:'Liberty Leading the People',             artist:'Eugène Delacroix',         type:'Painting', hasFake:false, fakeTell:''},
+  // STATUES
+  {id:'ancient-statue',     name:'Ancient Statue',          realName:'Shakōki-dogū Figurine',                  artist:'Unknown (Jōmon period)',   type:'Statue',   hasFake:true,  fakeTell:'Has insect antennae on head; eyes glow at night; may float'},
+  {id:'beautiful-statue',   name:'Beautiful Statue',        realName:'Venus de Milo',                          artist:'Unknown (Ancient Greece)', type:'Statue',   hasFake:true,  fakeTell:'Three necklaces around neck (real: none)'},
+  {id:'familiar-statue',    name:'Familiar Statue',         realName:'The Thinker',                            artist:'Auguste Rodin',            type:'Statue',   hasFake:false, fakeTell:''},
+  {id:'gallant-statue',     name:'Gallant Statue',          realName:'David',                                  artist:'Michelangelo',             type:'Statue',   hasFake:true,  fakeTell:'David holds a book tucked under his arm (real: hand at side)'},
+  {id:'great-statue',       name:'Great Statue',            realName:'King Kamehameha I',                      artist:'Thomas Ridgeway Gould',    type:'Statue',   hasFake:false, fakeTell:''},
+  {id:'informative-statue', name:'Informative Statue',      realName:'Rosetta Stone',                          artist:'Unknown (Ancient Egypt)',  type:'Statue',   hasFake:true,  fakeTell:'Stone is bright blue and glowing (real: dull grey)'},
+  {id:'motherly-statue',    name:'Motherly Statue',         realName:'Capitoline Wolf',                        artist:'Unknown',                  type:'Statue',   hasFake:true,  fakeTell:'Wolf has tongue hanging out (real: mouth closed)'},
+  {id:'mystic-statue',      name:'Mystic Statue',           realName:'Bust of Nefertiti',                      artist:'Thutmose',                 type:'Statue',   hasFake:true,  fakeTell:'Earring on right ear (real: no earring on that side)'},
+  {id:'robust-statue',      name:'Robust Statue',           realName:'Discobolus (Discus Thrower)',            artist:'Myron (Roman copy)',       type:'Statue',   hasFake:true,  fakeTell:'Wristwatch on right wrist'},
+  {id:'rock-head-statue',   name:'Rock-head Statue',        realName:'Olmec Colossal Head',                    artist:'Unknown (Olmec)',          type:'Statue',   hasFake:true,  fakeTell:'Lips curled into a smile (real: neutral, stern expression)'},
+  {id:'tremendous-statue',  name:'Tremendous Statue',       realName:'Houmuwu Ding (bronze cauldron)',         artist:'Unknown (Shang Dynasty)',  type:'Statue',   hasFake:true,  fakeTell:'Has a lid on top (real: open vessel with no lid)'},
+  {id:'valiant-statue',     name:'Valiant Statue',          realName:'Nike of Samothrace',                     artist:'Unknown (Ancient Greece)', type:'Statue',   hasFake:true,  fakeTell:'Mirrored: left leg forward; right wing appears smaller'},
+  {id:'warrior-statue',     name:'Warrior Statue',          realName:'Terracotta Army Warrior',                artist:'Unknown (Qin Dynasty)',    type:'Statue',   hasFake:true,  fakeTell:'Soldier holds a shovel (real: holds a weapon/spear)'},
+];
+
+// ══════════════════════════════════════════════════════════
+//  FOSSIL DATA — All 73 Pieces
+//  Source: Nookipedia (nookipedia.com/wiki/Fossil/New_Horizons)
+// ══════════════════════════════════════════════════════════
+const FOSSILS = [
+  {id:'ankylo-skull',       name:'Ankylo Skull',        set:'Ankylosaurus'},
+  {id:'ankylo-tail',        name:'Ankylo Tail',         set:'Ankylosaurus'},
+  {id:'ankylo-torso',       name:'Ankylo Torso',        set:'Ankylosaurus'},
+  {id:'archelon-skull',     name:'Archelon Skull',      set:'Archelon'},
+  {id:'archelon-tail',      name:'Archelon Tail',       set:'Archelon'},
+  {id:'brachio-chest',      name:'Brachio Chest',       set:'Brachiosaurus'},
+  {id:'brachio-pelvis',     name:'Brachio Pelvis',      set:'Brachiosaurus'},
+  {id:'brachio-skull',      name:'Brachio Skull',       set:'Brachiosaurus'},
+  {id:'brachio-tail',       name:'Brachio Tail',        set:'Brachiosaurus'},
+  {id:'deinony-tail',       name:'Deinony Tail',        set:'Deinonychus'},
+  {id:'deinony-torso',      name:'Deinony Torso',       set:'Deinonychus'},
+  {id:'dimetrodon-skull',   name:'Dimetrodon Skull',    set:'Dimetrodon'},
+  {id:'dimetrodon-torso',   name:'Dimetrodon Torso',    set:'Dimetrodon'},
+  {id:'diplo-chest',        name:'Diplo Chest',         set:'Diplodocus'},
+  {id:'diplo-neck',         name:'Diplo Neck',          set:'Diplodocus'},
+  {id:'diplo-pelvis',       name:'Diplo Pelvis',        set:'Diplodocus'},
+  {id:'diplo-skull',        name:'Diplo Skull',         set:'Diplodocus'},
+  {id:'diplo-tail',         name:'Diplo Tail',          set:'Diplodocus'},
+  {id:'diplo-tail-tip',     name:'Diplo Tail Tip',      set:'Diplodocus'},
+  {id:'iguanodon-skull',    name:'Iguanodon Skull',     set:'Iguanodon'},
+  {id:'iguanodon-tail',     name:'Iguanodon Tail',      set:'Iguanodon'},
+  {id:'iguanodon-torso',    name:'Iguanodon Torso',     set:'Iguanodon'},
+  {id:'mammoth-skull',      name:'Mammoth Skull',       set:'Mammoth'},
+  {id:'mammoth-torso',      name:'Mammoth Torso',       set:'Mammoth'},
+  {id:'megacero-skull',     name:'Megacero Skull',      set:'Megacerops'},
+  {id:'megacero-tail',      name:'Megacero Tail',       set:'Megacerops'},
+  {id:'megacero-torso',     name:'Megacero Torso',      set:'Megacerops'},
+  {id:'left-megalo-side',   name:'Left Megalo Side',    set:'Megaloceros'},
+  {id:'right-megalo-side',  name:'Right Megalo Side',   set:'Megaloceros'},
+  {id:'ophthalmo-skull',    name:'Ophthalmo Skull',     set:'Ophthalmosaurus'},
+  {id:'ophthalmo-torso',    name:'Ophthalmo Torso',     set:'Ophthalmosaurus'},
+  {id:'pachy-skull',        name:'Pachy Skull',         set:'Pachycephalosaurus'},
+  {id:'pachy-tail',         name:'Pachy Tail',          set:'Pachycephalosaurus'},
+  {id:'parasaur-skull',     name:'Parasaur Skull',      set:'Parasaurolophus'},
+  {id:'parasaur-tail',      name:'Parasaur Tail',       set:'Parasaurolophus'},
+  {id:'parasaur-torso',     name:'Parasaur Torso',      set:'Parasaurolophus'},
+  {id:'plesio-skull',       name:'Plesio Skull',        set:'Plesiosaurus'},
+  {id:'plesio-tail',        name:'Plesio Tail',         set:'Plesiosaurus'},
+  {id:'plesio-torso',       name:'Plesio Torso',        set:'Plesiosaurus'},
+  {id:'left-ptera-wing',    name:'Left Ptera Wing',     set:'Pteranodon'},
+  {id:'ptera-body',         name:'Ptera Body',          set:'Pteranodon'},
+  {id:'right-ptera-wing',   name:'Right Ptera Wing',    set:'Pteranodon'},
+  {id:'left-quetzal-wing',  name:'Left Quetzal Wing',   set:'Quetzalcoatlus'},
+  {id:'quetzal-torso',      name:'Quetzal Torso',       set:'Quetzalcoatlus'},
+  {id:'right-quetzal-wing', name:'Right Quetzal Wing',  set:'Quetzalcoatlus'},
+  {id:'sabertooth-skull',   name:'Sabertooth Skull',    set:'Sabertooth Tiger'},
+  {id:'sabertooth-tail',    name:'Sabertooth Tail',     set:'Sabertooth Tiger'},
+  {id:'spino-skull',        name:'Spino Skull',         set:'Spinosaurus'},
+  {id:'spino-tail',         name:'Spino Tail',          set:'Spinosaurus'},
+  {id:'spino-torso',        name:'Spino Torso',         set:'Spinosaurus'},
+  {id:'stego-skull',        name:'Stego Skull',         set:'Stegosaurus'},
+  {id:'stego-tail',         name:'Stego Tail',          set:'Stegosaurus'},
+  {id:'stego-torso',        name:'Stego Torso',         set:'Stegosaurus'},
+  {id:'t-rex-skull',        name:'T. Rex Skull',        set:'T. Rex'},
+  {id:'t-rex-tail',         name:'T. Rex Tail',         set:'T. Rex'},
+  {id:'t-rex-torso',        name:'T. Rex Torso',        set:'T. Rex'},
+  {id:'tricera-skull',      name:'Tricera Skull',       set:'Triceratops'},
+  {id:'tricera-tail',       name:'Tricera Tail',        set:'Triceratops'},
+  {id:'tricera-torso',      name:'Tricera Torso',       set:'Triceratops'},
+  // Standalone (14)
+  {id:'acanthostega',         name:'Acanthostega',        set:'Standalone'},
+  {id:'amber',                name:'Amber',               set:'Standalone'},
+  {id:'ammonite',             name:'Ammonite',            set:'Standalone'},
+  {id:'anomalocaris',         name:'Anomalocaris',        set:'Standalone'},
+  {id:'archaeopteryx',        name:'Archaeopteryx',       set:'Standalone'},
+  {id:'australopith',         name:'Australopith',        set:'Standalone'},
+  {id:'coprolite',            name:'Coprolite',           set:'Standalone'},
+  {id:'dinosaur-track',       name:'Dinosaur Track',      set:'Standalone'},
+  {id:'dunkleosteus',         name:'Dunkleosteus',        set:'Standalone'},
+  {id:'eusthenopteron',       name:'Eusthenopteron',      set:'Standalone'},
+  {id:'juramaia',             name:'Juramaia',            set:'Standalone'},
+  {id:'myllokunmingia',       name:'Myllokunmingia',      set:'Standalone'},
+  {id:'shark-tooth-pattern',  name:'Shark-tooth Pattern', set:'Standalone'},
+  {id:'trilobite',            name:'Trilobite',           set:'Standalone'},
+];
+
 // Jess's uncaught creatures (updated 24/03/2026)
 const FISH_UNCAUGHT = new Set([9,10,14,15,17,20,29,30,37,39,40,46,47,52,54,63,66,67,68,69,73,75,78,79]);
 const DEFAULT_FISH_CAUGHT = {};
@@ -691,6 +919,10 @@ let state = {
   caughtFish: {},
   caughtBugs: {},
   caughtSea: {},
+  donatedArt: {},
+  donatedFossils: {},
+  artFilter: 'need',
+  fossilFilter: 'need',
   expanded: {}
 };
 
@@ -713,13 +945,46 @@ try {
   else { state.caughtSea = {...DEFAULT_SEA_CAUGHT}; localStorage.setItem('acnh-sea-caught', JSON.stringify(state.caughtSea)); }
 } catch(e) { state.caughtSea = {...DEFAULT_SEA_CAUGHT}; }
 
+try {
+  const sa = localStorage.getItem('acnh-art-donated');
+  if (sa) state.donatedArt = JSON.parse(sa);
+} catch(e) { state.donatedArt = {}; }
+
+try {
+  const sf = localStorage.getItem('acnh-fossils-donated');
+  if (sf) state.donatedFossils = JSON.parse(sf);
+} catch(e) { state.donatedFossils = {}; }
+
 // ══════════════════════════════════════════════════════════
 //  Helpers
 // ══════════════════════════════════════════════════════════
-function getData() { return state.activeTab === 'fish' ? FISH : state.activeTab === 'bugs' ? BUGS : SEA; }
-function getCaught() { return state.activeTab === 'fish' ? state.caughtFish : state.activeTab === 'bugs' ? state.caughtBugs : state.caughtSea; }
-function getCaughtKey() { return state.activeTab === 'fish' ? 'acnh-fish-caught' : state.activeTab === 'bugs' ? 'acnh-bugs-caught' : 'acnh-sea-caught'; }
-function getTotal() { return state.activeTab === 'sea' ? 40 : 80; }
+function getData() {
+  if (state.activeTab === 'fish') return FISH;
+  if (state.activeTab === 'bugs') return BUGS;
+  if (state.activeTab === 'sea') return SEA;
+  if (state.activeTab === 'art') return ART;
+  return FOSSILS;
+}
+function getCaught() {
+  if (state.activeTab === 'fish') return state.caughtFish;
+  if (state.activeTab === 'bugs') return state.caughtBugs;
+  if (state.activeTab === 'sea') return state.caughtSea;
+  if (state.activeTab === 'art') return state.donatedArt;
+  return state.donatedFossils;
+}
+function getCaughtKey() {
+  if (state.activeTab === 'fish') return 'acnh-fish-caught';
+  if (state.activeTab === 'bugs') return 'acnh-bugs-caught';
+  if (state.activeTab === 'sea') return 'acnh-sea-caught';
+  if (state.activeTab === 'art') return 'acnh-art-donated';
+  return 'acnh-fossils-donated';
+}
+function getTotal() {
+  if (state.activeTab === 'sea') return 40;
+  if (state.activeTab === 'art') return 43;
+  if (state.activeTab === 'fossils') return 73;
+  return 80;
+}
 function getCurrentMonth() { return state.monthFilter === 'auto' ? new Date().getMonth() + 1 : state.monthFilter; }
 function getCurrentHour() { return new Date().getHours(); }
 function getNextMonth(m) { return m === 12 ? 1 : m + 1; }
@@ -755,7 +1020,10 @@ function isNewThisMonth(item) {
   return months.includes(cur) && !months.includes(getPrevMonth(cur));
 }
 
-function isCaught(item) { return !!getCaught()[item.id]; }
+function isCaught(item) {
+  const key = (state.activeTab === 'art' || state.activeTab === 'fossils') ? item.id : item.id;
+  return !!getCaught()[key];
+}
 
 function formatHours(hours) {
   if (hours.length === 1 && hours[0][0] === 0 && hours[0][1] === 24) return 'All Day';
@@ -882,6 +1150,9 @@ function buildLocationFilters() {
 }
 
 function render() {
+  if (state.activeTab === 'art') { renderArt(); return; }
+  if (state.activeTab === 'fossils') { renderFossils(); return; }
+
   const data = getData();
   const caught = getCaught();
   const filtered = getFilteredData();
@@ -972,7 +1243,23 @@ function setTab(tab) {
   state.expanded = {};
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
   document.getElementById('searchBox').value = '';
-  buildLocationFilters();
+
+  const isCreature = ['fish', 'bugs', 'sea'].includes(tab);
+  document.getElementById('creatureFilters').style.display = isCreature ? '' : 'none';
+  document.getElementById('artFilters').style.display = tab === 'art' ? '' : 'none';
+  document.getElementById('fossilFilters').style.display = tab === 'fossils' ? '' : 'none';
+  document.getElementById('rainToggle').style.display = isCreature ? '' : 'none';
+  document.getElementById('advancedFiltersToggle').style.display = isCreature ? '' : 'none';
+  document.querySelector('.advanced-filters').style.display = 'none';
+  document.querySelector('.advanced-filters').classList.remove('show');
+  if (isCreature) {
+    buildLocationFilters();
+    updateQuickFilterUI();
+  } else if (tab === 'art') {
+    updateArtFilterUI();
+  } else {
+    updateFossilFilterUI();
+  }
   render();
 }
 
@@ -1051,9 +1338,18 @@ function toggleCaught(id, el) {
   if (!caught[id]) delete caught[id];
   localStorage.setItem(getCaughtKey(), JSON.stringify(caught));
   if (el) {
-    el.closest('.fish-card')?.classList.add('pop');
-    setTimeout(() => el.closest('.fish-card')?.classList.remove('pop'), 300);
+    const card = el.closest('.fish-card') || el.closest('.art-card');
+    card?.classList.add('pop');
+    setTimeout(() => card?.classList.remove('pop'), 300);
   }
+  render();
+}
+
+function toggleFossilDonated(id) {
+  const donated = state.donatedFossils;
+  donated[id] = !donated[id];
+  if (!donated[id]) delete donated[id];
+  localStorage.setItem('acnh-fossils-donated', JSON.stringify(donated));
   render();
 }
 
@@ -1063,19 +1359,206 @@ function toggleExpand(key) {
 }
 
 function resetCaught() {
-  const label = state.activeTab === 'fish' ? "fish" : state.activeTab === 'sea' ? "sea creatures" : "bugs";
-  if (!confirm('Reset all ' + label + ' caught/uncaught back to defaults?')) return;
+  const labels = {fish:'fish',sea:'sea creatures',bugs:'bugs',art:'art donations',fossils:'fossil donations'};
+  const label = labels[state.activeTab] || state.activeTab;
+  if (!confirm('Reset all ' + label + ' back to defaults?')) return;
   if (state.activeTab === 'fish') {
     state.caughtFish = {...DEFAULT_FISH_CAUGHT};
     localStorage.setItem('acnh-fish-caught', JSON.stringify(state.caughtFish));
   } else if (state.activeTab === 'sea') {
     state.caughtSea = {...DEFAULT_SEA_CAUGHT};
     localStorage.setItem('acnh-sea-caught', JSON.stringify(state.caughtSea));
+  } else if (state.activeTab === 'art') {
+    state.donatedArt = {};
+    localStorage.setItem('acnh-art-donated', JSON.stringify(state.donatedArt));
+  } else if (state.activeTab === 'fossils') {
+    state.donatedFossils = {};
+    localStorage.setItem('acnh-fossils-donated', JSON.stringify(state.donatedFossils));
   } else {
     state.caughtBugs = {...DEFAULT_BUGS_CAUGHT};
     localStorage.setItem('acnh-bugs-caught', JSON.stringify(state.caughtBugs));
   }
   render();
+}
+
+// ══════════════════════════════════════════════════════════
+//  Art Tab
+// ══════════════════════════════════════════════════════════
+function setArtFilter(f) {
+  state.artFilter = f;
+  updateArtFilterUI();
+  render();
+}
+
+function updateArtFilterUI() {
+  document.querySelectorAll('[data-artfilter]').forEach(b => {
+    b.classList.toggle('active', b.dataset.artfilter === state.artFilter);
+  });
+}
+
+function renderArt() {
+  const donated = state.donatedArt;
+  const search = document.getElementById('searchBox').value.toLowerCase().trim();
+  const donatedCount = ART.filter(a => donated[a.id]).length;
+  const needCount = ART.length - donatedCount;
+
+  // Update progress bar
+  document.getElementById('progressCount').textContent = donatedCount + ' / 43';
+  document.getElementById('progressFill').style.width = (donatedCount / 43 * 100) + '%';
+  document.getElementById('progressLabel').textContent = '🏛️ Art Collection';
+  document.getElementById('logoSub').textContent = 'Art Tracker';
+
+  // Update filter counts
+  document.getElementById('artAllCount').textContent = ART.length;
+  document.getElementById('artNeedCount').textContent = needCount;
+  document.getElementById('artDoneCount').textContent = donatedCount;
+
+  let list = [...ART];
+  if (state.artFilter === 'need') list = list.filter(a => !donated[a.id]);
+  else if (state.artFilter === 'done') list = list.filter(a => donated[a.id]);
+  else if (state.artFilter === 'hasFake') list = list.filter(a => a.hasFake);
+  else if (state.artFilter === 'alwaysReal') list = list.filter(a => !a.hasFake);
+  if (search) list = list.filter(a => a.name.toLowerCase().includes(search) || a.realName.toLowerCase().includes(search) || a.artist.toLowerCase().includes(search));
+
+  list.sort((a, b) => {
+    // Paintings before statues, then alphabetical
+    if (a.type !== b.type) return a.type === 'Painting' ? -1 : 1;
+    return a.name.localeCompare(b.name);
+  });
+
+  document.getElementById('resultsText').textContent = 'Showing ' + list.length;
+
+  const grid = document.getElementById('fishGrid');
+  const empty = document.getElementById('emptyState');
+  grid.className = 'art-grid';
+
+  if (list.length === 0) { grid.innerHTML = ''; empty.style.display = 'block'; document.getElementById('emptyIcon').textContent = '🎨'; return; }
+  empty.style.display = 'none';
+
+  grid.innerHTML = list.map(item => {
+    const isDonated = !!donated[item.id];
+    const icon = item.type === 'Statue' ? '🗿' : '🖼️';
+    const fakeBadge = item.hasFake
+      ? `<span class="fake-badge has-fake">⚠️ Can Be Fake</span>`
+      : `<span class="fake-badge always-real">✅ Always Real</span>`;
+    const fakeTell = item.hasFake && !isDonated
+      ? `<div class="art-fake-tell">🔍 Fake: ${item.fakeTell}</div>`
+      : '';
+
+    return `
+      <div class="art-card${isDonated ? ' donated' : ''}" onclick="toggleCaught('${item.id}', this)">
+        <div class="art-name-row">
+          <span class="art-icon">${icon}</span>
+          <div>
+            <span class="art-name">${item.name}</span>
+            <span class="art-realname">${item.realName} — ${item.artist}</span>
+          </div>
+        </div>
+        <div class="art-badges">
+          <span class="art-type-badge">${item.type}</span>
+          ${fakeBadge}
+        </div>
+        ${fakeTell}
+        <div class="caught-indicator" onclick="event.stopPropagation(); toggleCaught('${item.id}', this)">
+          ${isDonated ? '✓' : ''}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════════════
+//  Fossil Tab
+// ══════════════════════════════════════════════════════════
+function setFossilFilter(f) {
+  state.fossilFilter = f;
+  updateFossilFilterUI();
+  render();
+}
+
+function updateFossilFilterUI() {
+  document.querySelectorAll('[data-fossilfilter]').forEach(b => {
+    b.classList.toggle('active', b.dataset.fossilfilter === state.fossilFilter);
+  });
+}
+
+function renderFossils() {
+  const donated = state.donatedFossils;
+  const search = document.getElementById('searchBox').value.toLowerCase().trim();
+  const donatedCount = FOSSILS.filter(f => donated[f.id]).length;
+  const needCount = FOSSILS.length - donatedCount;
+
+  // Update progress bar
+  document.getElementById('progressCount').textContent = donatedCount + ' / 73';
+  document.getElementById('progressFill').style.width = (donatedCount / 73 * 100) + '%';
+  document.getElementById('progressLabel').textContent = '🏛️ Fossil Collection';
+  document.getElementById('logoSub').textContent = 'Fossil Tracker';
+
+  // Update filter counts
+  document.getElementById('fossilAllCount').textContent = FOSSILS.length;
+  document.getElementById('fossilNeedCount').textContent = needCount;
+  document.getElementById('fossilDoneCount').textContent = donatedCount;
+
+  let list = [...FOSSILS];
+  if (state.fossilFilter === 'need') list = list.filter(f => !donated[f.id]);
+  else if (state.fossilFilter === 'done') list = list.filter(f => donated[f.id]);
+  if (search) list = list.filter(f => f.name.toLowerCase().includes(search) || f.set.toLowerCase().includes(search));
+
+  document.getElementById('resultsText').textContent = 'Showing ' + list.length;
+
+  const grid = document.getElementById('fishGrid');
+  const empty = document.getElementById('emptyState');
+  grid.className = 'fossil-list';
+
+  if (list.length === 0) { grid.innerHTML = ''; empty.style.display = 'block'; document.getElementById('emptyIcon').textContent = '🦴'; return; }
+  empty.style.display = 'none';
+
+  // Group by set
+  const setOrder = ['Standalone','Ankylosaurus','Archelon','Brachiosaurus','Deinonychus','Dimetrodon',
+    'Diplodocus','Iguanodon','Mammoth','Megacerops','Megaloceros','Ophthalmosaurus',
+    'Pachycephalosaurus','Parasaurolophus','Plesiosaurus','Pteranodon','Quetzalcoatlus',
+    'Sabertooth Tiger','Spinosaurus','Stegosaurus','T. Rex','Triceratops'];
+  const grouped = {};
+  list.forEach(f => { if (!grouped[f.set]) grouped[f.set] = []; grouped[f.set].push(f); });
+
+  const sets = setOrder.filter(s => grouped[s]);
+  const extraSets = Object.keys(grouped).filter(s => !setOrder.includes(s));
+  const allSets = [...sets, ...extraSets];
+
+  const setIcons = {
+    'Standalone':'🔬','Ankylosaurus':'🦕','Archelon':'🐢','Brachiosaurus':'🦕',
+    'Deinonychus':'🦖','Dimetrodon':'🦕','Diplodocus':'🦕','Iguanodon':'🦖',
+    'Mammoth':'🦣','Megacerops':'🦏','Megaloceros':'🦌','Ophthalmosaurus':'🐟',
+    'Pachycephalosaurus':'🦖','Parasaurolophus':'🦕','Plesiosaurus':'🐊',
+    'Pteranodon':'🦅','Quetzalcoatlus':'🦅','Sabertooth Tiger':'🐯',
+    'Spinosaurus':'🦖','Stegosaurus':'🦕','T. Rex':'🦖','Triceratops':'🦕'
+  };
+
+  grid.innerHTML = allSets.map(setName => {
+    const pieces = grouped[setName];
+    // Count donated within this set (from all FOSSILS, not just filtered list)
+    const totalInSet = FOSSILS.filter(f => f.set === setName).length;
+    const donatedInSet = FOSSILS.filter(f => f.set === setName && donated[f.id]).length;
+    const allDone = donatedInSet === totalInSet;
+    const icon = setIcons[setName] || '🦴';
+
+    return `
+      <div class="fossil-group">
+        <div class="fossil-group-header${allDone ? ' complete' : ''}">
+          <span>${icon} ${setName}</span>
+          <span class="group-progress">${donatedInSet}/${totalInSet}</span>
+        </div>
+        <div class="fossil-pieces">
+          ${pieces.map(f => {
+            const isDonated = !!donated[f.id];
+            return `
+              <div class="fossil-piece${isDonated ? ' donated' : ''}" onclick="toggleFossilDonated('${f.id}')">
+                <span class="fossil-piece-name">${f.name}</span>
+                <div class="fossil-check">${isDonated ? '✓' : ''}</div>
+              </div>`;
+          }).join('')}
+        </div>
+      </div>`;
+  }).join('');
 }
 
 // Scroll to top
